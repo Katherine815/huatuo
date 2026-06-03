@@ -10,6 +10,7 @@
   <view class="auth-banner">
     <view class="auth-title">访问控制</view>
     <view class="auth-copy">{{authStatus}}</view>
+    <view wx:if="{{authOpenid}}" class="auth-openid">OpenID：{{authOpenid}}</view>
   </view>
 
   <view class="search-box">

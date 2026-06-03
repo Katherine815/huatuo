@@ -1,4 +1,5 @@
 const { getMedicalRecordCount, searchPatients } = require("../../utils/mockData");
+const { checkAuth } = require("../../services/authService");
 
 Page({
   data: {
@@ -7,11 +8,14 @@ Page({
     hasPatients: false,
     totalPatientCount: 0,
     totalMedicalRecordCount: 0,
-    authStatus: "本地原型：下一步接入云函数 OpenID 白名单",
+    authStatus: "正在检查访问权限...",
+    authMode: "checking",
+    authOpenid: "",
   },
 
   onLoad() {
     this.refreshPatients("");
+    this.refreshAuthStatus();
   },
 
   onShow() {
@@ -39,9 +43,8 @@ Page({
   },
 
   onCreatePatient() {
-    wx.showToast({
-      title: "下一步实现新增病人",
-      icon: "none",
+    wx.navigateTo({
+      url: "/pages/patient-edit/index",
     });
   },
 
@@ -54,6 +57,16 @@ Page({
       hasPatients: patients.length > 0,
       totalPatientCount: allPatients.length,
       totalMedicalRecordCount: getMedicalRecordCount(),
+    });
+  },
+
+  refreshAuthStatus() {
+    checkAuth().then((auth) => {
+      this.setData({
+        authStatus: auth.statusText,
+        authMode: auth.mode,
+        authOpenid: auth.openid,
+      });
     });
   },
 });

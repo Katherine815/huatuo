@@ -32,4 +32,6 @@
       </view>
     </view>
   </view>
+
+  <button class="danger-button" bindtap="onDeleteRecord">删除医疗记录</button>
 </view>

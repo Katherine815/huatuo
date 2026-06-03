@@ -1,5 +1,10 @@
 const { TEXT_LIMIT, medicalRecordFormSections } = require("../../config/medicalRecordForm");
-const { getPatientById, getRecordById } = require("../../utils/mockData");
+const {
+  createMedicalRecord,
+  getPatientById,
+  getRecordById,
+  updateMedicalRecord,
+} = require("../../utils/mockData");
 
 function createEmptyDraft(record) {
   return {
@@ -160,7 +165,11 @@ Page({
   onTextInput(event) {
     const { key, group } = event.currentTarget.dataset;
     const value = event.detail.value;
-    const draft = this.data.draft;
+    const draft = {
+      ...this.data.draft,
+      selected: { ...this.data.draft.selected },
+      notes: { ...this.data.draft.notes },
+    };
 
     if (group) {
       draft.notes[group] = value;
@@ -175,7 +184,11 @@ Page({
   },
 
   onVisitDateChange(event) {
-    const draft = this.data.draft;
+    const draft = {
+      ...this.data.draft,
+      selected: { ...this.data.draft.selected },
+      notes: { ...this.data.draft.notes },
+    };
 
     draft.visitDate = event.detail.value;
 
@@ -184,7 +197,11 @@ Page({
 
   onCheckboxChange(event) {
     const { group } = event.currentTarget.dataset;
-    const draft = this.data.draft;
+    const draft = {
+      ...this.data.draft,
+      selected: { ...this.data.draft.selected },
+      notes: { ...this.data.draft.notes },
+    };
 
     draft.selected[group] = event.detail.value.map((value) => Number(value));
 
@@ -192,9 +209,65 @@ Page({
   },
 
   onSaveDraft() {
+    const draft = this.data.draft;
+
+    if (!String(draft.visitDate || "").trim()) {
+      wx.showToast({
+        title: "请选择就诊日期",
+        icon: "none",
+      });
+      return;
+    }
+
+    if (!String(draft.chiefComplaint || "").trim()) {
+      wx.showToast({
+        title: "请填写主诉",
+        icon: "none",
+      });
+      return;
+    }
+
+    if (this.data.mode === "create") {
+      const record = createMedicalRecord(this.data.patient.id, draft);
+
+      if (!record) {
+        wx.showToast({
+          title: "保存失败，未找到病人",
+          icon: "none",
+        });
+        return;
+      }
+
+      wx.showToast({
+        title: "已新增医疗记录",
+        icon: "success",
+      });
+
+      setTimeout(() => {
+        wx.redirectTo({
+          url: `/pages/medical-record-detail/index?id=${record.id}`,
+        });
+      }, 500);
+      return;
+    }
+
+    const updatedRecord = updateMedicalRecord(this.data.record.id, draft);
+
+    if (!updatedRecord) {
+      wx.showToast({
+        title: "保存失败，未找到记录",
+        icon: "none",
+      });
+      return;
+    }
+
     wx.showToast({
-      title: this.data.mode === "create" ? "本地新增原型，下一步接云保存" : "本地编辑原型，下一步接云保存",
-      icon: "none",
+      title: "已保存",
+      icon: "success",
     });
+
+    setTimeout(() => {
+      wx.navigateBack();
+    }, 500);
   },
 });

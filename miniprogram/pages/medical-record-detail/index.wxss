@@ -132,3 +132,15 @@ page {
   font-size: 27rpx;
   line-height: 1.55;
 }
+
+.danger-button {
+  background: #fff7f5;
+  border: 1rpx solid #f2b8ad;
+  border-radius: 8rpx;
+  color: #b42318;
+  font-size: 28rpx;
+  line-height: 72rpx;
+  margin-top: 30rpx;
+  min-height: 72rpx;
+  width: 100%;
+}

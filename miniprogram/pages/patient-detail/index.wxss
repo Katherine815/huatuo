@@ -86,6 +86,38 @@ page {
   margin-bottom: 18rpx;
 }
 
+.date-filter-button {
+  align-items: center;
+  background: #ffffff;
+  border: 1rpx solid #d7ccbb;
+  border-radius: 8rpx;
+  box-sizing: border-box;
+  color: #4f5d67;
+  display: flex;
+  font-size: 24rpx;
+  height: 56rpx;
+  justify-content: flex-start;
+  line-height: 56rpx;
+  margin-bottom: 18rpx;
+  max-width: 100%;
+  padding: 0 18rpx;
+}
+
+.date-filter-button.active {
+  background: #e8f3ee;
+  border-color: #72a890;
+  color: #1f4f43;
+  font-weight: 700;
+}
+
+.filter-x {
+  color: #1f4f43;
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 1;
+  margin-right: 8rpx;
+}
+
 .section-title {
   color: #1f2933;
   font-size: 32rpx;
@@ -179,4 +211,16 @@ page {
 .empty-copy {
   color: #65737e;
   font-size: 24rpx;
+}
+
+.danger-button {
+  background: #fff7f5;
+  border: 1rpx solid #f2b8ad;
+  border-radius: 8rpx;
+  color: #b42318;
+  font-size: 28rpx;
+  line-height: 72rpx;
+  margin-top: 30rpx;
+  min-height: 72rpx;
+  width: 100%;
 }

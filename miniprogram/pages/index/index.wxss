@@ -66,6 +66,14 @@ page {
   line-height: 1.5;
 }
 
+.auth-openid {
+  color: #8a8172;
+  font-size: 21rpx;
+  line-height: 1.45;
+  margin-top: 10rpx;
+  word-break: break-all;
+}
+
 .search-box {
   align-items: center;
   background: #ffffff;

@@ -1,6 +1,8 @@
 const { getOptionLabelMap, medicalRecordFormSections } = require("../config/medicalRecordForm");
 
-const patients = [
+const STORAGE_KEY = "huatuo_local_data_v1";
+
+const initialPatients = [
   {
     id: "pat_202605300001",
     patientNo: "P202605300001",
@@ -46,7 +48,7 @@ const medicalRecordSectionOrder = [
   "generalNotes",
 ];
 
-const medicalRecords = [
+const initialMedicalRecords = [
   {
     id: "rec_202602140001",
     recordNo: "R202602140001",
@@ -122,20 +124,96 @@ const medicalRecords = [
   },
 ];
 
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function canUseStorage() {
+  return typeof wx !== "undefined" && wx.getStorageSync && wx.setStorageSync;
+}
+
+function createInitialState() {
+  return {
+    patients: clone(initialPatients),
+    medicalRecords: clone(initialMedicalRecords),
+  };
+}
+
+function loadState() {
+  if (!canUseStorage()) {
+    return createInitialState();
+  }
+
+  const storedState = wx.getStorageSync(STORAGE_KEY);
+
+  if (storedState && storedState.patients && storedState.medicalRecords) {
+    return storedState;
+  }
+
+  const initialState = createInitialState();
+  wx.setStorageSync(STORAGE_KEY, initialState);
+  return initialState;
+}
+
+function saveState(state) {
+  if (canUseStorage()) {
+    wx.setStorageSync(STORAGE_KEY, state);
+  }
+}
+
+function formatDateTime(date) {
+  const pad = (value) => {
+    const text = String(value);
+    return text.length >= 2 ? text : `0${text}`;
+  };
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function generatePatientId() {
+  return `pat_${Date.now()}`;
+}
+
+function generatePatientNo() {
+  const date = new Date();
+  const pad = (value) => {
+    const text = String(value);
+    return text.length >= 2 ? text : `0${text}`;
+  };
+
+  return `P${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}${String(Date.now()).slice(-4)}`;
+}
+
+function generateMedicalRecordId() {
+  return `rec_${Date.now()}`;
+}
+
+function generateMedicalRecordNo() {
+  const date = new Date();
+  const pad = (value) => {
+    const text = String(value);
+    return text.length >= 2 ? text : `0${text}`;
+  };
+
+  return `R${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}${String(Date.now()).slice(-4)}`;
+}
+
 function getPatients() {
-  return patients;
+  return loadState().patients.filter((patient) => !patient.deletedAt);
 }
 
 function getMedicalRecordCount() {
-  return medicalRecords.length;
+  return loadState().medicalRecords.filter((record) => !record.deletedAt).length;
 }
 
 function getPatientById(id) {
-  return patients.find((patient) => patient.id === id);
+  return loadState().patients.find((patient) => patient.id === id && !patient.deletedAt);
 }
 
 function searchPatients(keyword) {
   const normalizedKeyword = String(keyword || "").trim().toLowerCase();
+
+  const patients = getPatients();
 
   if (!normalizedKeyword) {
     return patients;
@@ -149,15 +227,16 @@ function searchPatients(keyword) {
 }
 
 function getRecordsByPatientId(patientId) {
-  return medicalRecords
-    .filter((record) => record.patientId === patientId)
+  return loadState()
+    .medicalRecords
+    .filter((record) => record.patientId === patientId && !record.deletedAt)
     .sort((a, b) => {
       return new Date(a.visitDate).getTime() - new Date(b.visitDate).getTime();
     });
 }
 
 function getRecordById(id) {
-  const record = medicalRecords.find((item) => item.id === id);
+  const record = loadState().medicalRecords.find((item) => item.id === id && !item.deletedAt);
 
   if (!record) {
     return record;
@@ -167,6 +246,161 @@ function getRecordById(id) {
     ...record,
     detailSections: buildDetailSections(record),
   };
+}
+
+function createPatient(data) {
+  const state = loadState();
+  const now = formatDateTime(new Date());
+  const patient = {
+    id: generatePatientId(),
+    patientNo: generatePatientNo(),
+    name: data.name,
+    gender: data.gender,
+    birthDate: data.birthDate,
+    contact: data.contact,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  state.patients.unshift(patient);
+  saveState(state);
+
+  return patient;
+}
+
+function updatePatient(id, data) {
+  const state = loadState();
+  const patientIndex = state.patients.findIndex((patient) => patient.id === id);
+
+  if (patientIndex < 0) {
+    return null;
+  }
+
+  const updatedPatient = {
+    ...state.patients[patientIndex],
+    name: data.name,
+    gender: data.gender,
+    birthDate: data.birthDate,
+    contact: data.contact,
+    updatedAt: formatDateTime(new Date()),
+  };
+
+  state.patients.splice(patientIndex, 1, updatedPatient);
+  saveState(state);
+
+  return updatedPatient;
+}
+
+function deletePatient(id) {
+  const state = loadState();
+  const patientIndex = state.patients.findIndex((patient) => patient.id === id && !patient.deletedAt);
+
+  if (patientIndex < 0) {
+    return false;
+  }
+
+  const deletedAt = formatDateTime(new Date());
+
+  state.patients.splice(patientIndex, 1, {
+    ...state.patients[patientIndex],
+    deletedAt,
+    updatedAt: deletedAt,
+  });
+
+  state.medicalRecords = state.medicalRecords.map((record) => {
+    if (record.patientId !== id || record.deletedAt) {
+      return record;
+    }
+
+    return {
+      ...record,
+      deletedAt,
+      updatedAt: deletedAt,
+    };
+  });
+
+  saveState(state);
+
+  return true;
+}
+
+function createMedicalRecord(patientId, data) {
+  const state = loadState();
+  const patient = state.patients.find((item) => item.id === patientId);
+
+  if (!patient) {
+    return null;
+  }
+
+  const now = formatDateTime(new Date());
+  const record = {
+    id: generateMedicalRecordId(),
+    recordNo: generateMedicalRecordNo(),
+    patientId,
+    visitDate: data.visitDate,
+    chiefComplaint: data.chiefComplaint,
+    selected: data.selected || {},
+    notes: data.notes || {},
+    fourDiagnosisSynthesisPatternDifferentiation: data.fourDiagnosisSynthesisPatternDifferentiation || "",
+    treatmentPlan: data.treatmentPlan || "",
+    prescriptionMedication: data.prescriptionMedication || "",
+    generalNotes: data.generalNotes || "",
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  state.medicalRecords.push(record);
+  saveState(state);
+
+  return getRecordById(record.id);
+}
+
+function updateMedicalRecord(id, data) {
+  const state = loadState();
+  const recordIndex = state.medicalRecords.findIndex((record) => record.id === id);
+
+  if (recordIndex < 0) {
+    return null;
+  }
+
+  const updatedRecord = {
+    ...state.medicalRecords[recordIndex],
+    visitDate: data.visitDate,
+    chiefComplaint: data.chiefComplaint,
+    selected: data.selected || {},
+    notes: data.notes || {},
+    fourDiagnosisSynthesisPatternDifferentiation: data.fourDiagnosisSynthesisPatternDifferentiation || "",
+    treatmentPlan: data.treatmentPlan || "",
+    prescriptionMedication: data.prescriptionMedication || "",
+    generalNotes: data.generalNotes || "",
+    updatedAt: formatDateTime(new Date()),
+  };
+
+  state.medicalRecords.splice(recordIndex, 1, updatedRecord);
+  saveState(state);
+
+  return getRecordById(id);
+}
+
+function deleteMedicalRecord(id) {
+  const state = loadState();
+  const recordIndex = state.medicalRecords.findIndex((record) => record.id === id && !record.deletedAt);
+
+  if (recordIndex < 0) {
+    return false;
+  }
+
+  const deletedAt = formatDateTime(new Date());
+
+  state.medicalRecords.splice(recordIndex, 1, {
+    ...state.medicalRecords[recordIndex],
+    deletedAt,
+    updatedAt: deletedAt,
+  });
+
+  saveState(state);
+
+  return true;
 }
 
 function buildDetailSections(record) {
@@ -224,10 +458,16 @@ function buildDetailSections(record) {
 }
 
 module.exports = {
+  createMedicalRecord,
+  createPatient,
+  deleteMedicalRecord,
+  deletePatient,
   getRecordById,
   getMedicalRecordCount,
   getPatients,
   getPatientById,
   getRecordsByPatientId,
   searchPatients,
+  updateMedicalRecord,
+  updatePatient,
 };

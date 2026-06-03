@@ -1,0 +1,53 @@
+<view class="page" wx:if="{{canRender}}">
+  <view class="header">
+    <view class="eyebrow">{{modeLabel}}</view>
+    <view class="title">{{pageTitle}}</view>
+    <view class="subtitle">{{patientNo}}</view>
+  </view>
+
+  <view class="form-card">
+    <view class="field">
+      <view class="label">姓名</view>
+      <input
+        class="input"
+        value="{{draft.name}}"
+        data-field="name"
+        bindinput="onInput"
+        placeholder="请输入姓名"
+      />
+    </view>
+
+    <view class="field">
+      <view class="label">性别</view>
+      <picker mode="selector" range="{{genderOptions}}" value="{{genderIndex}}" bindchange="onGenderChange">
+        <view class="picker-row">
+          <view class="picker-value">{{genderDisplay}}</view>
+          <view class="picker-action">修改</view>
+        </view>
+      </picker>
+    </view>
+
+    <view class="field">
+      <view class="label">出生年月</view>
+      <picker mode="date" fields="month" value="{{draft.birthDate}}" bindchange="onBirthDateChange">
+        <view class="picker-row">
+          <view class="picker-value">{{birthDateDisplay}}</view>
+          <view class="picker-action">修改</view>
+        </view>
+      </picker>
+    </view>
+
+    <view class="field last">
+      <view class="label">联系</view>
+      <input
+        class="input"
+        value="{{draft.contact}}"
+        data-field="contact"
+        bindinput="onInput"
+        placeholder="请输入联系方式、微信号或备注"
+      />
+    </view>
+  </view>
+
+  <button class="save-button" bindtap="onSaveDraft">保存</button>
+</view>
