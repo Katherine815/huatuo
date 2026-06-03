@@ -1,0 +1,35 @@
+<view class="page" wx:if="{{record}}">
+  <view class="record-header">
+    <view>
+      <view class="eyebrow">Medical Record</view>
+      <view class="title">{{record.visitDate}}</view>
+      <view class="subtitle">{{patient.name}} · {{record.recordNo}}</view>
+    </view>
+    <button class="primary-button" bindtap="onEditRecord">编辑</button>
+  </view>
+
+  <view class="meta-grid">
+    <view class="meta-item">
+      <view class="label">就诊日期</view>
+      <view class="value">{{record.visitDate}}</view>
+    </view>
+    <view class="meta-item">
+      <view class="label">更新时间</view>
+      <view class="value">{{record.updatedAt}}</view>
+    </view>
+  </view>
+
+  <view wx:for="{{record.detailSections}}" wx:key="key" class="content-block">
+    <view class="block-title">{{item.title}}</view>
+    <view class="block-subtitle">{{item.englishTitle}}</view>
+
+    <view wx:if="{{item.text}}" class="paragraph">{{item.text}}</view>
+
+    <view wx:if="{{item.items}}">
+      <view wx:for="{{item.items}}" wx:for-item="field" wx:key="label" class="field-row">
+        <view class="field-label">{{field.label}}</view>
+        <view class="field-value">{{field.value}}</view>
+      </view>
+    </view>
+  </view>
+</view>

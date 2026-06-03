@@ -1,0 +1,62 @@
+<view class="page" wx:if="{{patient}}">
+  <view class="profile-header">
+    <view>
+      <view class="eyebrow">Patient Profile</view>
+      <view class="name">{{patient.name}}</view>
+    </view>
+    <button class="outline-button" bindtap="onEditPatient">编辑</button>
+  </view>
+
+  <view class="profile-grid">
+    <view class="profile-item">
+      <view class="label">病人编号</view>
+      <view class="value">{{patient.patientNo}}</view>
+    </view>
+    <view class="profile-item">
+      <view class="label">性别</view>
+      <view class="value">{{patient.gender}}</view>
+    </view>
+    <view class="profile-item">
+      <view class="label">出生年月</view>
+      <view class="value">{{patient.birthDate}}</view>
+    </view>
+    <view class="profile-item">
+      <view class="label">联系</view>
+      <view class="value">{{patient.contact}}</view>
+    </view>
+  </view>
+
+  <view class="records-header">
+    <view>
+      <view class="section-title">医疗记录</view>
+      <view class="section-copy">按就诊时间正序排列</view>
+    </view>
+    <button class="primary-button" bindtap="onCreateRecord">新增</button>
+  </view>
+
+  <view wx:if="{{!hasRecords}}" class="empty-state">
+    <view class="empty-title">暂无医疗记录</view>
+    <view class="empty-copy">点击“新增”创建该病人的第一次就诊记录。</view>
+  </view>
+
+  <view class="timeline">
+    <view
+      wx:for="{{records}}"
+      wx:key="id"
+      class="record-card"
+      data-id="{{item.id}}"
+      bindtap="onOpenRecord"
+    >
+      <view class="record-top">
+        <view class="visit-date">{{item.visitDate}}</view>
+        <view class="record-no">{{item.recordNo}}</view>
+      </view>
+      <view class="chief-title">主诉</view>
+      <view class="chief-copy">{{item.chiefComplaint}}</view>
+      <view class="record-footer">
+        <view class="updated">更新于 {{item.updatedAt}}</view>
+        <view class="open-link">查看完整记录</view>
+      </view>
+    </view>
+  </view>
+</view>

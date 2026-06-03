@@ -1,0 +1,68 @@
+<view class="page" wx:if="{{canRender}}">
+  <view class="edit-header">
+    <view>
+      <view class="eyebrow">{{modeLabel}}</view>
+      <view class="title">{{pageTitle}}</view>
+      <view class="subtitle">{{subtitle}}</view>
+    </view>
+  </view>
+
+  <picker mode="date" value="{{draft.visitDate}}" bindchange="onVisitDateChange">
+    <view class="date-row">
+      <view>
+        <view class="date-label">就诊日期</view>
+        <view class="date-value">{{draft.visitDate}}</view>
+      </view>
+      <view class="date-action">修改</view>
+    </view>
+  </picker>
+
+  <view wx:for="{{sections}}" wx:key="key" class="form-section">
+    <view class="section-title">{{item.title}}</view>
+    <view class="section-subtitle">{{item.englishTitle}}</view>
+
+    <view wx:if="{{item.isTextarea}}" class="textarea-wrap">
+      <textarea
+        class="textarea"
+        maxlength="{{textLimit}}"
+        value="{{item.textValue}}"
+        data-key="{{item.key}}"
+        bindinput="onTextInput"
+        placeholder="请输入{{item.title}}"
+      />
+      <view class="counter">{{item.textLength}}/{{textLimit}}</view>
+    </view>
+
+    <view wx:if="{{item.groups}}">
+      <view wx:for="{{item.groups}}" wx:for-item="group" wx:key="key" class="field-group">
+        <view class="group-label">{{group.label}}</view>
+
+        <checkbox-group
+          wx:if="{{group.options}}"
+          class="checkbox-grid"
+          data-group="{{group.key}}"
+          bindchange="onCheckboxChange"
+        >
+          <label wx:for="{{group.options}}" wx:for-item="option" wx:key="id" class="checkbox-chip">
+            <checkbox value="{{option.id}}" checked="{{option.checked}}" color="#1f4f43" />
+            <text>{{option.label}}</text>
+          </label>
+        </checkbox-group>
+
+        <view wx:if="{{group.isTextarea}}" class="textarea-wrap">
+          <textarea
+            class="textarea small"
+            maxlength="{{textLimit}}"
+            value="{{group.textValue}}"
+            data-group="{{group.key}}"
+            bindinput="onTextInput"
+            placeholder="请输入{{group.label}}备注"
+          />
+          <view class="counter">{{group.textLength}}/{{textLimit}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <button class="save-button bottom-save" bindtap="onSaveDraft">保存</button>
+</view>

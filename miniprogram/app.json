@@ -1,13 +1,16 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/patient-detail/index",
+    "pages/medical-record-detail/index",
+    "pages/medical-record-edit/index",
     "pages/example/index"
   ],
   "window": {
-    "backgroundColor": "#F6F6F6",
+    "backgroundColor": "#F4F1EA",
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#F6F6F6",
-    "navigationBarTitleText": "云开发 QuickStart",
+    "navigationBarBackgroundColor": "#F4F1EA",
+    "navigationBarTitleText": "中医医案",
     "navigationBarTextStyle": "black"
   },
   "sitemapLocation": "sitemap.json",

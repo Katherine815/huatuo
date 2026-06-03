@@ -1,4 +1,13 @@
 /**app.wxss**/
+page {
+  background: #f4f1ea;
+  color: #1f2933;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+  justify-content: flex-start;
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -16,12 +25,4 @@ button:focus{
 
 button::after{
   border: none;
-}
-
-
-page {
-  background: #f6f6f6;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
 }
