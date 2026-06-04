@@ -12,8 +12,20 @@ page {
 .record-header {
   align-items: center;
   display: flex;
+  gap: 18rpx;
   justify-content: space-between;
   margin-bottom: 24rpx;
+}
+
+.record-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.record-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12rpx;
 }
 
 .eyebrow {
@@ -37,6 +49,7 @@ page {
   margin-top: 8rpx;
 }
 
+.outline-button,
 .primary-button {
   background: #2f6f5e;
   border-radius: 8rpx;
@@ -45,6 +58,38 @@ page {
   line-height: 60rpx;
   min-height: 60rpx;
   padding: 0 24rpx;
+}
+
+.outline-button {
+  background: #ffffff;
+  border: 1rpx solid #c9d7d0;
+  color: #2f6f5e;
+}
+
+.compact-button {
+  align-items: center;
+  box-sizing: border-box;
+  display: inline-flex;
+  font-size: 24rpx;
+  justify-content: center;
+  line-height: 56rpx;
+  margin: 0;
+  min-width: 0;
+  min-height: 56rpx;
+  padding: 0 18rpx;
+  width: auto;
+}
+
+.trash-banner {
+  background: #fffaf0;
+  border: 1rpx solid #ead9b8;
+  border-radius: 8rpx;
+  box-sizing: border-box;
+  color: #6c5f4b;
+  font-size: 24rpx;
+  line-height: 1.5;
+  margin-bottom: 20rpx;
+  padding: 18rpx 20rpx;
 }
 
 .meta-grid {
@@ -143,4 +188,25 @@ page {
   margin-top: 30rpx;
   min-height: 72rpx;
   width: 100%;
+}
+
+.trash-actions {
+  display: grid;
+  gap: 16rpx;
+  grid-template-columns: 1fr;
+  margin-top: 30rpx;
+}
+
+.restore-button {
+  background: #e8f3ee;
+  border-radius: 8rpx;
+  color: #1f4f43;
+  font-size: 28rpx;
+  line-height: 72rpx;
+  min-height: 72rpx;
+  width: 100%;
+}
+
+.trash-actions .danger-button {
+  margin-top: 0;
 }

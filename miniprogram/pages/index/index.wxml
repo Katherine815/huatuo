@@ -1,10 +1,13 @@
 <view class="page">
   <view class="summary">
-    <view>
+    <view class="summary-title">
       <view class="eyebrow">TCM Medical Records</view>
       <view class="title">病人档案</view>
     </view>
-    <button class="icon-button" bindtap="onCreatePatient" aria-label="新增病人">＋</button>
+    <view class="header-actions">
+      <view class="tool-button" bindtap="onOpenTrash">♲</view>
+      <button class="icon-button" bindtap="onCreatePatient" aria-label="新增病人">＋</button>
+    </view>
   </view>
 
   <view class="auth-banner">

@@ -1,0 +1,141 @@
+page {
+  background: #f4f1ea;
+}
+
+.page {
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: 36rpx 28rpx 56rpx;
+  width: 100%;
+}
+
+.header {
+  margin-bottom: 24rpx;
+}
+
+.eyebrow {
+  color: #7b6f5e;
+  font-size: 22rpx;
+  letter-spacing: 0;
+  margin-bottom: 8rpx;
+}
+
+.title {
+  color: #1f2933;
+  font-size: 40rpx;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.subtitle {
+  color: #65737e;
+  font-size: 24rpx;
+  line-height: 1.5;
+  margin-top: 10rpx;
+}
+
+.bulk-actions {
+  display: grid;
+  gap: 14rpx;
+  grid-template-columns: 1fr;
+  margin-bottom: 20rpx;
+}
+
+.restore-button,
+.delete-button {
+  border-radius: 8rpx;
+  font-size: 26rpx;
+  line-height: 68rpx;
+  min-height: 68rpx;
+}
+
+.restore-button {
+  background: #e8f3ee;
+  color: #1f4f43;
+}
+
+.delete-button {
+  background: #fff7f5;
+  border: 1rpx solid #f2b8ad;
+  color: #b42318;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.record-card,
+.empty-state {
+  background: #ffffff;
+  border: 1rpx solid #e3dac8;
+  border-radius: 8rpx;
+  box-sizing: border-box;
+  padding: 24rpx;
+}
+
+.record-top {
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 18rpx;
+}
+
+.visit-date {
+  color: #2f6f5e;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.record-no {
+  color: #7b6f5e;
+  font-size: 22rpx;
+}
+
+.chief-title {
+  color: #7b6f5e;
+  font-size: 22rpx;
+  margin-bottom: 8rpx;
+}
+
+.chief-copy {
+  color: #1f2933;
+  font-size: 28rpx;
+  line-height: 1.5;
+  margin-bottom: 18rpx;
+}
+
+.record-footer {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.updated,
+.open-link {
+  color: #8a8172;
+  font-size: 22rpx;
+}
+
+.open-link {
+  color: #2f6f5e;
+  font-weight: 700;
+}
+
+.empty-state {
+  border-style: dashed;
+  text-align: center;
+}
+
+.empty-title {
+  color: #1f2933;
+  font-size: 30rpx;
+  font-weight: 700;
+  margin-bottom: 10rpx;
+}
+
+.empty-copy {
+  color: #65737e;
+  font-size: 24rpx;
+}

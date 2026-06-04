@@ -1,12 +1,17 @@
 <view class="page" wx:if="{{record}}">
   <view class="record-header">
-    <view>
+    <view class="record-title">
       <view class="eyebrow">Medical Record</view>
       <view class="title">{{record.visitDate}}</view>
       <view class="subtitle">{{patient.name}} · {{record.recordNo}}</view>
     </view>
-    <button class="primary-button" bindtap="onEditRecord">编辑</button>
+    <view wx:if="{{!isTrash}}" class="record-actions">
+      <view class="outline-button compact-button" bindtap="onExportRecord">导出</view>
+      <view class="primary-button compact-button" bindtap="onEditRecord">编辑</view>
+    </view>
   </view>
+
+  <view wx:if="{{isTrash}}" class="trash-banner">这条医疗记录在回收站中。</view>
 
   <view class="meta-grid">
     <view class="meta-item">
@@ -33,5 +38,10 @@
     </view>
   </view>
 
-  <button class="danger-button" bindtap="onDeleteRecord">删除医疗记录</button>
+  <button wx:if="{{!isTrash}}" class="danger-button" bindtap="onDeleteRecord">删除医疗记录</button>
+
+  <view wx:if="{{isTrash}}" class="trash-actions">
+    <button class="restore-button" bindtap="onRestoreRecord">恢复医疗记录</button>
+    <button class="danger-button" bindtap="onPermanentDeleteRecord">永久删除医疗记录</button>
+  </view>
 </view>

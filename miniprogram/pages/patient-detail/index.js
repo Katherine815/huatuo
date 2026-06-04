@@ -1,4 +1,5 @@
 const { deletePatient, getPatientById, getRecordsByPatientId } = require("../../utils/mockData");
+const { exportPatientMedicalRecords } = require("../../services/exportService");
 
 Page({
   data: {
@@ -79,10 +80,14 @@ Page({
     });
   },
 
+  onExportPatientRecords() {
+    exportPatientMedicalRecords(this.data.patient, this.data.allRecords);
+  },
+
   onDeletePatient() {
     wx.showModal({
       title: "删除病人",
-      content: "删除后该病人和名下医疗记录将从列表隐藏。本地原型会软删除，后续可做回收站。",
+      content: "删除后该病人和名下医疗记录会移入回收站，可在 30 天内恢复。",
       confirmText: "删除",
       confirmColor: "#b42318",
       success: (result) => {

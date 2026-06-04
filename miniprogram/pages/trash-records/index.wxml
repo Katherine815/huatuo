@@ -1,0 +1,38 @@
+<view class="page">
+  <view class="header">
+    <view class="eyebrow">回收站</view>
+    <view class="title">{{title}}</view>
+    <view class="subtitle">这里显示该病人已删除的医疗记录。</view>
+  </view>
+
+  <view class="bulk-actions">
+    <button class="restore-button" bindtap="onRestoreAll">恢复所有医疗记录</button>
+    <button class="delete-button" bindtap="onPermanentDeleteAll">永久删除所有医疗记录</button>
+  </view>
+
+  <view wx:if="{{!hasRecords}}" class="empty-state">
+    <view class="empty-title">没有已删除医疗记录</view>
+    <view class="empty-copy">该分组可能已经被恢复或永久删除。</view>
+  </view>
+
+  <view class="timeline">
+    <view
+      wx:for="{{records}}"
+      wx:key="id"
+      class="record-card"
+      data-id="{{item.id}}"
+      bindtap="onOpenRecord"
+    >
+      <view class="record-top">
+        <view class="visit-date">{{item.visitDate}}</view>
+        <view class="record-no">{{item.recordNo}}</view>
+      </view>
+      <view class="chief-title">主诉</view>
+      <view class="chief-copy">{{item.chiefComplaint}}</view>
+      <view class="record-footer">
+        <view class="updated">删除于 {{item.deletedAt}}</view>
+        <view class="open-link">查看完整记录</view>
+      </view>
+    </view>
+  </view>
+</view>

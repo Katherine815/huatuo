@@ -48,6 +48,12 @@ Page({
     });
   },
 
+  onOpenTrash() {
+    wx.navigateTo({
+      url: "/pages/trash/index",
+    });
+  },
+
   refreshPatients(keyword) {
     const patients = searchPatients(keyword);
     const allPatients = searchPatients("");

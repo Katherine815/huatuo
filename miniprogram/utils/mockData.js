@@ -1,6 +1,7 @@
 const { getOptionLabelMap, medicalRecordFormSections } = require("../config/medicalRecordForm");
 
 const STORAGE_KEY = "huatuo_local_data_v1";
+const TRASH_RETENTION_DAYS = 30;
 
 const initialPatients = [
   {
@@ -147,12 +148,52 @@ function loadState() {
   const storedState = wx.getStorageSync(STORAGE_KEY);
 
   if (storedState && storedState.patients && storedState.medicalRecords) {
-    return storedState;
+    const purgedState = purgeExpiredTrash(storedState);
+    wx.setStorageSync(STORAGE_KEY, purgedState);
+    return purgedState;
   }
 
   const initialState = createInitialState();
   wx.setStorageSync(STORAGE_KEY, initialState);
   return initialState;
+}
+
+function parseLocalDateTime(value) {
+  if (!value) {
+    return null;
+  }
+
+  return new Date(String(value).replace(" ", "T"));
+}
+
+function isExpiredTrashItem(item) {
+  const deletedAt = parseLocalDateTime(item.deletedAt);
+
+  if (!deletedAt) {
+    return false;
+  }
+
+  const retentionTime = TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+  return Date.now() - deletedAt.getTime() >= retentionTime;
+}
+
+function purgeExpiredTrash(state) {
+  const expiredPatientIds = state.patients
+    .filter((patient) => patient.deletedAt && isExpiredTrashItem(patient))
+    .map((patient) => patient.id);
+
+  return {
+    patients: state.patients.filter((patient) => {
+      return !patient.deletedAt || !isExpiredTrashItem(patient);
+    }),
+    medicalRecords: state.medicalRecords.filter((record) => {
+      if (expiredPatientIds.indexOf(record.patientId) >= 0) {
+        return false;
+      }
+
+      return !record.deletedAt || !isExpiredTrashItem(record);
+    }),
+  };
 }
 
 function saveState(state) {
@@ -210,6 +251,10 @@ function getPatientById(id) {
   return loadState().patients.find((patient) => patient.id === id && !patient.deletedAt);
 }
 
+function getPatientByIdIncludingDeleted(id) {
+  return loadState().patients.find((patient) => patient.id === id);
+}
+
 function searchPatients(keyword) {
   const normalizedKeyword = String(keyword || "").trim().toLowerCase();
 
@@ -235,9 +280,7 @@ function getRecordsByPatientId(patientId) {
     });
 }
 
-function getRecordById(id) {
-  const record = loadState().medicalRecords.find((item) => item.id === id && !item.deletedAt);
-
+function hydrateRecord(record) {
   if (!record) {
     return record;
   }
@@ -246,6 +289,22 @@ function getRecordById(id) {
     ...record,
     detailSections: buildDetailSections(record),
   };
+}
+
+function getRecordById(id) {
+  const record = loadState().medicalRecords.find((item) => item.id === id && !item.deletedAt);
+
+  if (!record) {
+    return record;
+  }
+
+  return hydrateRecord(record);
+}
+
+function getTrashRecordById(id) {
+  const record = loadState().medicalRecords.find((item) => item.id === id && item.deletedAt);
+
+  return hydrateRecord(record);
 }
 
 function createPatient(data) {
@@ -315,6 +374,7 @@ function deletePatient(id) {
     return {
       ...record,
       deletedAt,
+      deletedByPatientId: id,
       updatedAt: deletedAt,
     };
   });
@@ -403,6 +463,201 @@ function deleteMedicalRecord(id) {
   return true;
 }
 
+function getRecycleBinGroups() {
+  const state = loadState();
+  const patientIds = [];
+
+  state.patients.forEach((patient) => {
+    if (patient.deletedAt && patientIds.indexOf(patient.id) < 0) {
+      patientIds.push(patient.id);
+    }
+  });
+
+  state.medicalRecords.forEach((record) => {
+    if (record.deletedAt && patientIds.indexOf(record.patientId) < 0) {
+      patientIds.push(record.patientId);
+    }
+  });
+
+  return patientIds
+    .map((patientId) => {
+      const patient = state.patients.find((item) => item.id === patientId);
+      const records = state.medicalRecords.filter((record) => record.patientId === patientId && record.deletedAt);
+      const latestDeletedAt = [patient && patient.deletedAt]
+        .concat(records.map((record) => record.deletedAt))
+        .filter(Boolean)
+        .sort()
+        .pop();
+
+      if (!patient && !records.length) {
+        return null;
+      }
+
+      return {
+        patientId,
+        patientName: patient ? patient.name : "未知病人",
+        patientNo: patient ? patient.patientNo : "",
+        title: `${patient ? patient.name : "未知病人"}的医疗记录`,
+        recordCount: records.length,
+        isPatientDeleted: Boolean(patient && patient.deletedAt),
+        latestDeletedAt,
+        detail: patient && patient.deletedAt ? "病人已删除，相关医疗记录在回收站中" : `包含 ${records.length} 条已删除医疗记录`,
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => {
+      return parseLocalDateTime(b.latestDeletedAt).getTime() - parseLocalDateTime(a.latestDeletedAt).getTime();
+    });
+}
+
+function getDeletedRecordsByPatientId(patientId) {
+  return loadState()
+    .medicalRecords
+    .filter((record) => record.patientId === patientId && record.deletedAt)
+    .sort((a, b) => {
+      return new Date(a.visitDate).getTime() - new Date(b.visitDate).getTime();
+    })
+    .map((record) => hydrateRecord(record));
+}
+
+function restoreTrashItem(type, id) {
+  const state = loadState();
+  const now = formatDateTime(new Date());
+
+  if (type === "patient") {
+    const patientIndex = state.patients.findIndex((patient) => patient.id === id && patient.deletedAt);
+
+    if (patientIndex < 0) {
+      return false;
+    }
+
+    const patient = { ...state.patients[patientIndex] };
+    delete patient.deletedAt;
+    patient.updatedAt = now;
+    state.patients.splice(patientIndex, 1, patient);
+
+    state.medicalRecords = state.medicalRecords.map((record) => {
+      if (record.deletedByPatientId !== id) {
+        return record;
+      }
+
+      const restoredRecord = { ...record };
+      delete restoredRecord.deletedAt;
+      delete restoredRecord.deletedByPatientId;
+      restoredRecord.updatedAt = now;
+      return restoredRecord;
+    });
+
+    saveState(state);
+    return true;
+  }
+
+  if (type === "medicalRecord") {
+    const recordIndex = state.medicalRecords.findIndex((record) => record.id === id && record.deletedAt);
+
+    if (recordIndex < 0) {
+      return false;
+    }
+
+    const record = { ...state.medicalRecords[recordIndex] };
+    const patientIndex = state.patients.findIndex((patient) => patient.id === record.patientId && patient.deletedAt);
+
+    if (patientIndex >= 0) {
+      const patient = { ...state.patients[patientIndex] };
+      delete patient.deletedAt;
+      patient.updatedAt = now;
+      state.patients.splice(patientIndex, 1, patient);
+    }
+
+    delete record.deletedAt;
+    delete record.deletedByPatientId;
+    record.updatedAt = now;
+    state.medicalRecords.splice(recordIndex, 1, record);
+    saveState(state);
+    return true;
+  }
+
+  return false;
+}
+
+function permanentlyDeleteTrashItem(type, id) {
+  const state = loadState();
+
+  if (type === "patient") {
+    state.patients = state.patients.filter((patient) => patient.id !== id);
+    state.medicalRecords = state.medicalRecords.filter((record) => record.patientId !== id);
+    saveState(state);
+    return true;
+  }
+
+  if (type === "medicalRecord") {
+    state.medicalRecords = state.medicalRecords.filter((record) => record.id !== id);
+    saveState(state);
+    return true;
+  }
+
+  return false;
+}
+
+function restorePatientRecycleRecords(patientId) {
+  const state = loadState();
+  const now = formatDateTime(new Date());
+  const patientIndex = state.patients.findIndex((patient) => patient.id === patientId);
+  let changed = false;
+
+  if (patientIndex >= 0 && state.patients[patientIndex].deletedAt) {
+    const patient = { ...state.patients[patientIndex] };
+    delete patient.deletedAt;
+    patient.updatedAt = now;
+    state.patients.splice(patientIndex, 1, patient);
+    changed = true;
+  }
+
+  state.medicalRecords = state.medicalRecords.map((record) => {
+    if (record.patientId !== patientId || !record.deletedAt) {
+      return record;
+    }
+
+    const restoredRecord = { ...record };
+    delete restoredRecord.deletedAt;
+    delete restoredRecord.deletedByPatientId;
+    restoredRecord.updatedAt = now;
+    changed = true;
+    return restoredRecord;
+  });
+
+  if (changed) {
+    saveState(state);
+  }
+
+  return changed;
+}
+
+function permanentlyDeletePatientRecycleRecords(patientId) {
+  const state = loadState();
+  const patient = state.patients.find((item) => item.id === patientId);
+  const shouldDeletePatient = Boolean(patient && patient.deletedAt);
+
+  if (shouldDeletePatient) {
+    state.patients = state.patients.filter((item) => item.id !== patientId);
+    state.medicalRecords = state.medicalRecords.filter((record) => record.patientId !== patientId);
+    saveState(state);
+    return true;
+  }
+
+  const beforeCount = state.medicalRecords.length;
+  state.medicalRecords = state.medicalRecords.filter((record) => {
+    return !(record.patientId === patientId && record.deletedAt);
+  });
+
+  if (state.medicalRecords.length !== beforeCount) {
+    saveState(state);
+    return true;
+  }
+
+  return false;
+}
+
 function buildDetailSections(record) {
   const optionLabelMap = getOptionLabelMap();
 
@@ -462,12 +717,20 @@ module.exports = {
   createPatient,
   deleteMedicalRecord,
   deletePatient,
+  getDeletedRecordsByPatientId,
+  getRecycleBinGroups,
   getRecordById,
   getMedicalRecordCount,
   getPatients,
   getPatientById,
+  getPatientByIdIncludingDeleted,
   getRecordsByPatientId,
   searchPatients,
+  permanentlyDeleteTrashItem,
+  permanentlyDeletePatientRecycleRecords,
+  restoreTrashItem,
+  restorePatientRecycleRecords,
+  getTrashRecordById,
   updateMedicalRecord,
   updatePatient,
 };

@@ -1,0 +1,31 @@
+<view class="page">
+  <view class="header">
+    <view class="eyebrow">回收站</view>
+    <view class="title">回收站</view>
+    <view class="subtitle">删除后的内容会保留 30 天，之后自动永久删除。</view>
+  </view>
+
+  <view wx:if="{{!hasGroups}}" class="empty-state">
+    <view class="empty-title">回收站为空</view>
+    <view class="empty-copy">删除病人或医疗记录后，会先出现在这里。</view>
+  </view>
+
+  <view class="trash-list">
+    <view
+      wx:for="{{groups}}"
+      wx:key="patientId"
+      class="trash-card"
+      data-patient-id="{{item.patientId}}"
+      bindtap="onOpenGroup"
+    >
+      <view class="trash-top">
+        <view>
+          <view class="trash-title">{{item.title}}</view>
+          <view class="trash-detail">{{item.detail}}</view>
+        </view>
+        <view class="trash-count">{{item.recordCount}}</view>
+      </view>
+      <view class="trash-time">最近删除于 {{item.latestDeletedAt}}</view>
+    </view>
+  </view>
+</view>

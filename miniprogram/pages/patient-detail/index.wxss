@@ -12,8 +12,20 @@ page {
 .profile-header {
   align-items: center;
   display: flex;
+  gap: 18rpx;
   justify-content: space-between;
   margin-bottom: 22rpx;
+}
+
+.profile-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 12rpx;
 }
 
 .eyebrow {
@@ -39,7 +51,27 @@ page {
   padding: 0 24rpx;
 }
 
+.compact-button {
+  align-items: center;
+  box-sizing: border-box;
+  display: inline-flex;
+  font-size: 24rpx;
+  justify-content: center;
+  line-height: 56rpx;
+  margin: 0;
+  min-width: 0;
+  min-height: 56rpx;
+  padding: 0 18rpx;
+  width: auto;
+}
+
 .outline-button {
+  background: #ffffff;
+  border: 1rpx solid #c9d7d0;
+  color: #2f6f5e;
+}
+
+.export-button {
   background: #ffffff;
   border: 1rpx solid #c9d7d0;
   color: #2f6f5e;
@@ -86,6 +118,11 @@ page {
   margin-bottom: 18rpx;
 }
 
+.records-header .primary-button {
+  flex: 0 0 auto;
+  margin: 0 0 0 auto;
+}
+
 .date-filter-button {
   align-items: center;
   background: #ffffff;
@@ -93,14 +130,15 @@ page {
   border-radius: 8rpx;
   box-sizing: border-box;
   color: #4f5d67;
-  display: flex;
+  display: inline-flex;
   font-size: 24rpx;
   height: 56rpx;
   justify-content: flex-start;
   line-height: 56rpx;
-  margin-bottom: 18rpx;
+  margin: 0 0 18rpx;
   max-width: 100%;
   padding: 0 18rpx;
+  width: auto;
 }
 
 .date-filter-button.active {

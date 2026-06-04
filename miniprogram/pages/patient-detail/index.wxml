@@ -1,10 +1,13 @@
 <view class="page" wx:if="{{patient}}">
   <view class="profile-header">
-    <view>
+    <view class="profile-title">
       <view class="eyebrow">Patient Profile</view>
       <view class="name">{{patient.name}}</view>
     </view>
-    <button class="outline-button" bindtap="onEditPatient">编辑</button>
+    <view class="profile-actions">
+      <view class="outline-button export-button compact-button" bindtap="onExportPatientRecords">导出全部</view>
+      <view class="primary-button compact-button" bindtap="onEditPatient">编辑</view>
+    </view>
   </view>
 
   <view class="profile-grid">
@@ -34,10 +37,10 @@
     <button class="primary-button" bindtap="onCreateRecord">新增</button>
   </view>
 
-  <button class="{{dateFilterButtonClass}}" bindtap="onOpenDateFilter">
+  <view class="{{dateFilterButtonClass}}" bindtap="onOpenDateFilter">
     <text wx:if="{{hasDateFilter}}" class="filter-x">×</text>
     <text>{{dateFilterLabel}}</text>
-  </button>
+  </view>
 
   <view wx:if="{{!hasAnyRecords}}" class="empty-state">
     <view class="empty-title">暂无医疗记录</view>
