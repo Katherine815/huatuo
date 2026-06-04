@@ -1,4 +1,5 @@
 const { getRecycleBinGroups } = require("../../utils/mockData");
+const cloudMedicalRecordService = require("../../services/cloudMedicalRecordService");
 
 Page({
   data: {
@@ -20,6 +21,25 @@ Page({
   },
 
   refreshRecycleBin() {
+    if (cloudMedicalRecordService.isCloudMode()) {
+      cloudMedicalRecordService
+        .getRecycleBinGroups()
+        .then((groups) => {
+          this.setData({
+            groups,
+            hasGroups: groups.length > 0,
+            groupCount: groups.length,
+          });
+        })
+        .catch((error) => {
+          wx.showToast({
+            title: error.message || "读取回收站失败",
+            icon: "none",
+          });
+        });
+      return;
+    }
+
     const groups = getRecycleBinGroups();
 
     this.setData({

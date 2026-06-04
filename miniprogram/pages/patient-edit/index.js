@@ -1,4 +1,5 @@
 const { createPatient, getPatientById, updatePatient } = require("../../utils/mockData");
+const cloudMedicalRecordService = require("../../services/cloudMedicalRecordService");
 
 function createDraft(patient) {
   return {
@@ -31,20 +32,29 @@ Page({
   },
 
   loadEditMode(patientId) {
-    const patient = getPatientById(patientId);
-
-    if (!patient) {
-      wx.showToast({
-        title: "未找到病人",
-        icon: "none",
-      });
-
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 800);
+    if (cloudMedicalRecordService.isCloudMode()) {
+      cloudMedicalRecordService
+        .getPatientById(patientId)
+        .then((patient) => {
+          this.applyEditMode(patient);
+        })
+        .catch(() => {
+          this.handleMissingPatient();
+        });
       return;
     }
 
+    const patient = getPatientById(patientId);
+
+    if (!patient) {
+      this.handleMissingPatient();
+      return;
+    }
+
+    this.applyEditMode(patient);
+  },
+
+  applyEditMode(patient) {
     const draft = createDraft(patient);
 
     this.setData({
@@ -58,6 +68,17 @@ Page({
       birthDateDisplay: draft.birthDate || "请选择出生年月",
       genderIndex: this.getGenderIndex(draft.gender),
     });
+  },
+
+  handleMissingPatient() {
+    wx.showToast({
+      title: "未找到病人",
+      icon: "none",
+    });
+
+    setTimeout(() => {
+      wx.navigateBack();
+    }, 800);
   },
 
   onInput(event) {
@@ -115,6 +136,30 @@ Page({
     }
 
     if (this.data.mode === "create") {
+      if (cloudMedicalRecordService.isCloudMode()) {
+        cloudMedicalRecordService
+          .createPatient(draft)
+          .then((patient) => {
+            wx.showToast({
+              title: "已新增病人",
+              icon: "success",
+            });
+
+            setTimeout(() => {
+              wx.redirectTo({
+                url: `/pages/patient-detail/index?id=${patient.id}`,
+              });
+            }, 500);
+          })
+          .catch((error) => {
+            wx.showToast({
+              title: error.message || "新增失败",
+              icon: "none",
+            });
+          });
+        return;
+      }
+
       const patient = createPatient(draft);
 
       wx.showToast({
@@ -127,6 +172,28 @@ Page({
           url: `/pages/patient-detail/index?id=${patient.id}`,
         });
       }, 500);
+      return;
+    }
+
+    if (cloudMedicalRecordService.isCloudMode()) {
+      cloudMedicalRecordService
+        .updatePatient(this.data.patient.id, draft)
+        .then(() => {
+          wx.showToast({
+            title: "已保存",
+            icon: "success",
+          });
+
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 500);
+        })
+        .catch((error) => {
+          wx.showToast({
+            title: error.message || "保存失败",
+            icon: "none",
+          });
+        });
       return;
     }
 

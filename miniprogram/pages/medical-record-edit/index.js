@@ -5,6 +5,7 @@ const {
   getRecordById,
   updateMedicalRecord,
 } = require("../../utils/mockData");
+const cloudMedicalRecordService = require("../../services/cloudMedicalRecordService");
 
 function createEmptyDraft(record) {
   return {
@@ -94,22 +95,38 @@ Page({
   },
 
   loadEditMode(recordId) {
-    const record = getRecordById(recordId);
-
-    if (!record) {
-      wx.showToast({
-        title: "未找到医疗记录",
-        icon: "none",
-      });
-
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 800);
+    if (cloudMedicalRecordService.isCloudMode()) {
+      cloudMedicalRecordService
+        .getRecordById(recordId)
+        .then((record) => {
+          return Promise.all([
+            Promise.resolve(record),
+            cloudMedicalRecordService.getPatientById(record.patientId),
+          ]);
+        })
+        .then(([record, patient]) => {
+          this.applyEditMode(record, patient);
+        })
+        .catch(() => {
+          this.handleMissingRecord();
+        });
       return;
     }
 
-    const draft = createEmptyDraft(record);
+    const record = getRecordById(recordId);
+
+    if (!record) {
+      this.handleMissingRecord();
+      return;
+    }
+
     const patient = getPatientById(record.patientId);
+
+    this.applyEditMode(record, patient);
+  },
+
+  applyEditMode(record, patient) {
+    const draft = createEmptyDraft(record);
 
     this.setData({
       mode: "edit",
@@ -125,20 +142,29 @@ Page({
   },
 
   loadCreateMode(patientId) {
-    const patient = getPatientById(patientId);
-
-    if (!patient) {
-      wx.showToast({
-        title: "未找到病人",
-        icon: "none",
-      });
-
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 800);
+    if (cloudMedicalRecordService.isCloudMode()) {
+      cloudMedicalRecordService
+        .getPatientById(patientId)
+        .then((patient) => {
+          this.applyCreateMode(patient);
+        })
+        .catch(() => {
+          this.handleMissingPatient();
+        });
       return;
     }
 
+    const patient = getPatientById(patientId);
+
+    if (!patient) {
+      this.handleMissingPatient();
+      return;
+    }
+
+    this.applyCreateMode(patient);
+  },
+
+  applyCreateMode(patient) {
     const today = new Date();
     const visitDate = `${today.getFullYear()}-${padTwo(today.getMonth() + 1)}-${padTwo(today.getDate())}`;
     const draft = createEmptyDraft();
@@ -160,6 +186,28 @@ Page({
       sections: buildViewSections(draft),
       canRender: true,
     });
+  },
+
+  handleMissingPatient() {
+    wx.showToast({
+      title: "未找到病人",
+      icon: "none",
+    });
+
+    setTimeout(() => {
+      wx.navigateBack();
+    }, 800);
+  },
+
+  handleMissingRecord() {
+    wx.showToast({
+      title: "未找到医疗记录",
+      icon: "none",
+    });
+
+    setTimeout(() => {
+      wx.navigateBack();
+    }, 800);
   },
 
   onTextInput(event) {
@@ -228,6 +276,30 @@ Page({
     }
 
     if (this.data.mode === "create") {
+      if (cloudMedicalRecordService.isCloudMode()) {
+        cloudMedicalRecordService
+          .createMedicalRecord(this.data.patient.id, draft)
+          .then((record) => {
+            wx.showToast({
+              title: "已新增医疗记录",
+              icon: "success",
+            });
+
+            setTimeout(() => {
+              wx.redirectTo({
+                url: `/pages/medical-record-detail/index?id=${record.id}`,
+              });
+            }, 500);
+          })
+          .catch((error) => {
+            wx.showToast({
+              title: error.message || "保存失败",
+              icon: "none",
+            });
+          });
+        return;
+      }
+
       const record = createMedicalRecord(this.data.patient.id, draft);
 
       if (!record) {
@@ -248,6 +320,28 @@ Page({
           url: `/pages/medical-record-detail/index?id=${record.id}`,
         });
       }, 500);
+      return;
+    }
+
+    if (cloudMedicalRecordService.isCloudMode()) {
+      cloudMedicalRecordService
+        .updateMedicalRecord(this.data.record.id, draft)
+        .then(() => {
+          wx.showToast({
+            title: "已保存",
+            icon: "success",
+          });
+
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 500);
+        })
+        .catch((error) => {
+          wx.showToast({
+            title: error.message || "保存失败",
+            icon: "none",
+          });
+        });
       return;
     }
 

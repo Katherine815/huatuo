@@ -1,5 +1,6 @@
 const { deletePatient, getPatientById, getRecordsByPatientId } = require("../../utils/mockData");
 const { exportPatientMedicalRecords } = require("../../services/exportService");
+const cloudMedicalRecordService = require("../../services/cloudMedicalRecordService");
 
 Page({
   data: {
@@ -31,17 +32,33 @@ Page({
   },
 
   refreshPage() {
+    if (cloudMedicalRecordService.isCloudMode()) {
+      Promise.all([
+        cloudMedicalRecordService.getPatientById(this.data.patientId),
+        cloudMedicalRecordService.getRecordsByPatientId(this.data.patientId),
+      ])
+        .then(([patient, allRecords]) => {
+          const records = this.filterRecordsByDate(allRecords, this.data.selectedVisitDate);
+
+          this.setData({
+            patient,
+            allRecords,
+            records,
+            hasRecords: records.length > 0,
+            hasAnyRecords: allRecords.length > 0,
+            hasFilteredOutRecords: allRecords.length > 0 && records.length === 0,
+          });
+        })
+        .catch(() => {
+          this.handleMissingPatient();
+        });
+      return;
+    }
+
     const patient = getPatientById(this.data.patientId);
 
     if (!patient) {
-      wx.showToast({
-        title: "未找到病人",
-        icon: "none",
-      });
-
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 800);
+      this.handleMissingPatient();
       return;
     }
 
@@ -56,6 +73,17 @@ Page({
       hasAnyRecords: allRecords.length > 0,
       hasFilteredOutRecords: allRecords.length > 0 && records.length === 0,
     });
+  },
+
+  handleMissingPatient() {
+    wx.showToast({
+      title: "未找到病人",
+      icon: "none",
+    });
+
+    setTimeout(() => {
+      wx.navigateBack();
+    }, 800);
   },
 
   filterRecordsByDate(records, selectedDate) {
@@ -92,6 +120,28 @@ Page({
       confirmColor: "#b42318",
       success: (result) => {
         if (!result.confirm) {
+          return;
+        }
+
+        if (cloudMedicalRecordService.isCloudMode()) {
+          cloudMedicalRecordService
+            .deletePatient(this.data.patient.id)
+            .then(() => {
+              wx.showToast({
+                title: "已删除",
+                icon: "success",
+              });
+
+              setTimeout(() => {
+                wx.navigateBack();
+              }, 500);
+            })
+            .catch((error) => {
+              wx.showToast({
+                title: error.message || "删除失败",
+                icon: "none",
+              });
+            });
           return;
         }
 

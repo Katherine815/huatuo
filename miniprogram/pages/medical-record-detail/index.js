@@ -8,6 +8,7 @@ const {
   restoreTrashItem,
 } = require("../../utils/mockData");
 const { exportSingleMedicalRecord } = require("../../services/exportService");
+const cloudMedicalRecordService = require("../../services/cloudMedicalRecordService");
 
 Page({
   data: {
@@ -33,17 +34,52 @@ Page({
   },
 
   refreshPage() {
+    if (cloudMedicalRecordService.isCloudMode() && this.data.isTrash) {
+      cloudMedicalRecordService
+        .getTrashRecordById(this.data.recordId)
+        .then((record) => {
+          return Promise.all([
+            Promise.resolve(record),
+            cloudMedicalRecordService.getPatientByIdIncludingDeleted(record.patientId),
+          ]);
+        })
+        .then(([record, patient]) => {
+          this.setData({
+            record,
+            patient,
+          });
+        })
+        .catch(() => {
+          this.handleMissingRecord();
+        });
+      return;
+    }
+
+    if (cloudMedicalRecordService.isCloudMode() && !this.data.isTrash) {
+      cloudMedicalRecordService
+        .getRecordById(this.data.recordId)
+        .then((record) => {
+          return Promise.all([
+            Promise.resolve(record),
+            cloudMedicalRecordService.getPatientById(record.patientId),
+          ]);
+        })
+        .then(([record, patient]) => {
+          this.setData({
+            record,
+            patient,
+          });
+        })
+        .catch(() => {
+          this.handleMissingRecord();
+        });
+      return;
+    }
+
     const record = this.data.isTrash ? getTrashRecordById(this.data.recordId) : getRecordById(this.data.recordId);
 
     if (!record) {
-      wx.showToast({
-        title: "未找到医疗记录",
-        icon: "none",
-      });
-
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 800);
+      this.handleMissingRecord();
       return;
     }
 
@@ -51,6 +87,17 @@ Page({
       record,
       patient: this.data.isTrash ? getPatientByIdIncludingDeleted(record.patientId) : getPatientById(record.patientId),
     });
+  },
+
+  handleMissingRecord() {
+    wx.showToast({
+      title: "未找到医疗记录",
+      icon: "none",
+    });
+
+    setTimeout(() => {
+      wx.navigateBack();
+    }, 800);
   },
 
   onEditRecord() {
@@ -71,6 +118,28 @@ Page({
       confirmColor: "#b42318",
       success: (result) => {
         if (!result.confirm) {
+          return;
+        }
+
+        if (cloudMedicalRecordService.isCloudMode()) {
+          cloudMedicalRecordService
+            .deleteMedicalRecord(this.data.record.id)
+            .then(() => {
+              wx.showToast({
+                title: "已删除",
+                icon: "success",
+              });
+
+              setTimeout(() => {
+                wx.navigateBack();
+              }, 500);
+            })
+            .catch((error) => {
+              wx.showToast({
+                title: error.message || "删除失败",
+                icon: "none",
+              });
+            });
           return;
         }
 
@@ -97,6 +166,28 @@ Page({
   },
 
   onRestoreRecord() {
+    if (cloudMedicalRecordService.isCloudMode()) {
+      cloudMedicalRecordService
+        .restoreMedicalRecord(this.data.record.id)
+        .then(() => {
+          wx.showToast({
+            title: "已恢复",
+            icon: "success",
+          });
+
+          setTimeout(() => {
+            wx.navigateBack();
+          }, 500);
+        })
+        .catch((error) => {
+          wx.showToast({
+            title: error.message || "恢复失败",
+            icon: "none",
+          });
+        });
+      return;
+    }
+
     const restored = restoreTrashItem("medicalRecord", this.data.record.id);
 
     wx.showToast({
@@ -117,6 +208,28 @@ Page({
       confirmColor: "#b42318",
       success: (result) => {
         if (!result.confirm) {
+          return;
+        }
+
+        if (cloudMedicalRecordService.isCloudMode()) {
+          cloudMedicalRecordService
+            .permanentlyDeleteMedicalRecord(this.data.record.id)
+            .then(() => {
+              wx.showToast({
+                title: "已永久删除",
+                icon: "success",
+              });
+
+              setTimeout(() => {
+                wx.navigateBack();
+              }, 500);
+            })
+            .catch((error) => {
+              wx.showToast({
+                title: error.message || "删除失败",
+                icon: "none",
+              });
+            });
           return;
         }
 

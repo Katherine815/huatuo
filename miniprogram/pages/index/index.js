@@ -1,5 +1,6 @@
 const { getMedicalRecordCount, searchPatients } = require("../../utils/mockData");
 const { checkAuth } = require("../../services/authService");
+const cloudMedicalRecordService = require("../../services/cloudMedicalRecordService");
 
 Page({
   data: {
@@ -55,6 +56,26 @@ Page({
   },
 
   refreshPatients(keyword) {
+    if (cloudMedicalRecordService.isCloudMode()) {
+      cloudMedicalRecordService
+        .listPatients(keyword)
+        .then((result) => {
+          this.setData({
+            patients: result.patients || [],
+            hasPatients: result.patients && result.patients.length > 0,
+            totalPatientCount: result.totalPatientCount || 0,
+            totalMedicalRecordCount: result.totalMedicalRecordCount || 0,
+          });
+        })
+        .catch((error) => {
+          wx.showToast({
+            title: error.message || "读取病人失败",
+            icon: "none",
+          });
+        });
+      return;
+    }
+
     const patients = searchPatients(keyword);
     const allPatients = searchPatients("");
 
