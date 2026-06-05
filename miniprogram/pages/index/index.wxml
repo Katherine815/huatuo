@@ -5,8 +5,6 @@
       <view class="title">病人档案</view>
     </view>
     <view class="header-actions">
-      <view class="tool-button import-button" bindtap="onImportJson">入</view>
-      <view class="tool-button" bindtap="onOpenTrash">♲</view>
       <button class="icon-button" bindtap="onCreatePatient" aria-label="新增病人">＋</button>
     </view>
   </view>
@@ -40,7 +38,13 @@
     </view>
   </view>
 
-  <view class="section-heading">病人列表</view>
+  <view class="section-bar">
+    <view class="section-heading">病人列表</view>
+    <view class="section-actions">
+      <view class="section-action-button" bindtap="onImportJson">导入</view>
+      <view class="section-action-button" bindtap="onOpenTrash">回收站</view>
+    </view>
+  </view>
 
   <view wx:if="{{!hasPatients}}" class="empty-state">
     <view class="empty-title">没有匹配的病人</view>
