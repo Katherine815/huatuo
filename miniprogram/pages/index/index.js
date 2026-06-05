@@ -55,6 +55,115 @@ Page({
     });
   },
 
+  onImportJson() {
+    if (!cloudMedicalRecordService.isCloudMode()) {
+      wx.showToast({
+        title: "请先配置云环境",
+        icon: "none",
+      });
+      return;
+    }
+
+    wx.chooseMessageFile({
+      count: 1,
+      type: "file",
+      extension: ["json"],
+      success: (result) => {
+        const file = result.tempFiles && result.tempFiles[0];
+
+        if (!file) {
+          return;
+        }
+
+        this.importJsonFile(file.path);
+      },
+      fail: () => {
+        wx.showToast({
+          title: "未选择文件",
+          icon: "none",
+        });
+      },
+    });
+  },
+
+  importJsonFile(filePath) {
+    const fs = wx.getFileSystemManager();
+
+    wx.showLoading({
+      title: "正在导入",
+      mask: true,
+    });
+
+    fs.readFile({
+      filePath,
+      encoding: "utf8",
+      success: (fileResult) => {
+        let payload = null;
+
+        try {
+          payload = JSON.parse(fileResult.data);
+        } catch (error) {
+          wx.hideLoading();
+          wx.showToast({
+            title: "JSON 格式不正确",
+            icon: "none",
+          });
+          return;
+        }
+
+        wx.hideLoading();
+        this.confirmImportMode(payload);
+      },
+      fail: () => {
+        wx.hideLoading();
+        wx.showToast({
+          title: "读取文件失败",
+          icon: "none",
+        });
+      },
+    });
+  },
+
+  confirmImportMode(payload) {
+    wx.showActionSheet({
+      itemList: ["智能合并", "新增导入"],
+      success: (result) => {
+        const importMode = result.tapIndex === 0 ? "merge" : "create";
+
+        this.runJsonImport(payload, importMode);
+      },
+    });
+  },
+
+  runJsonImport(payload, importMode) {
+    wx.showLoading({
+      title: "正在导入",
+      mask: true,
+    });
+
+    cloudMedicalRecordService
+      .importMedicalRecords(payload, importMode)
+      .then((importResult) => {
+        const importedCount = importResult.importedRecordCount || 0;
+        const skippedCount = importResult.skippedRecordCount || 0;
+
+        wx.hideLoading();
+        wx.showModal({
+          title: "导入完成",
+          content: `新增病人 ${importResult.importedPatientCount || 0} 个，新增医疗记录 ${importedCount} 条，跳过重复 ${skippedCount} 条。`,
+          showCancel: false,
+        });
+        this.refreshPatients(this.data.keyword);
+      })
+      .catch((error) => {
+        wx.hideLoading();
+        wx.showToast({
+          title: error.message || "导入失败",
+          icon: "none",
+        });
+      });
+  },
+
   refreshPatients(keyword) {
     if (cloudMedicalRecordService.isCloudMode()) {
       cloudMedicalRecordService

@@ -1,0 +1,10 @@
+{
+  "name": "purgeExpiredTrash",
+  "version": "1.0.0",
+  "description": "Scheduled cleanup for expired recycle bin records",
+  "main": "index.js",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "~2.4.0"
+  }
+}

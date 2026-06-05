@@ -1,4 +1,5 @@
 const { getRecordById } = require("../utils/mockData");
+const cloudMedicalRecordService = require("./cloudMedicalRecordService");
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -96,11 +97,111 @@ function copyTextExport(patient, records) {
   });
 }
 
+function downloadExportFile(exportResult) {
+  wx.showLoading({
+    title: "正在下载",
+    mask: true,
+  });
+
+  wx.cloud.downloadFile({
+    fileID: exportResult.fileID,
+    success(response) {
+      wx.hideLoading();
+
+      if (exportResult.format === "pdf") {
+        wx.openDocument({
+          filePath: response.tempFilePath,
+          fileType: "pdf",
+          showMenu: true,
+          fail() {
+            wx.showToast({
+              title: "PDF 已生成，打开失败",
+              icon: "none",
+            });
+          },
+        });
+        return;
+      }
+
+      if (wx.shareFileMessage) {
+        wx.shareFileMessage({
+          filePath: response.tempFilePath,
+          fileName: exportResult.fileName,
+          fail() {
+            wx.showToast({
+              title: "JSON 已生成",
+              icon: "success",
+            });
+          },
+        });
+        return;
+      }
+
+      wx.showToast({
+        title: "JSON 已生成",
+        icon: "success",
+      });
+    },
+    fail() {
+      wx.hideLoading();
+      wx.showToast({
+        title: "下载失败",
+        icon: "none",
+      });
+    },
+  });
+}
+
+function runCloudExport(data) {
+  wx.showActionSheet({
+    itemList: ["导出 PDF 文件", "导出 JSON 文件"],
+    success(result) {
+      const format = result.tapIndex === 0 ? "pdf" : "json";
+
+      wx.showLoading({
+        title: "正在生成",
+        mask: true,
+      });
+
+      cloudMedicalRecordService
+        .exportMedicalRecords({
+          ...data,
+          format,
+        })
+        .then((exportResult) => {
+          wx.hideLoading();
+          downloadExportFile(exportResult);
+        })
+        .catch((error) => {
+          wx.hideLoading();
+          wx.showToast({
+            title: error.message || "导出失败",
+            icon: "none",
+          });
+        });
+    },
+  });
+}
+
 function exportSingleMedicalRecord(patient, record) {
+  if (cloudMedicalRecordService.isCloudMode()) {
+    runCloudExport({
+      recordId: record.id,
+    });
+    return;
+  }
+
   copyTextExport(patient, [record]);
 }
 
 function exportPatientMedicalRecords(patient, records) {
+  if (cloudMedicalRecordService.isCloudMode()) {
+    runCloudExport({
+      patientId: patient.id,
+    });
+    return;
+  }
+
   copyTextExport(patient, records);
 }
 

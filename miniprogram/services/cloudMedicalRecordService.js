@@ -244,11 +244,23 @@ function permanentlyDeletePatientRecycleRecords(patientId) {
   });
 }
 
+function exportMedicalRecords(data) {
+  return callMedicalRecordApi("exportMedicalRecords", data);
+}
+
+function importMedicalRecords(payload, importMode) {
+  return callMedicalRecordApi("importMedicalRecords", {
+    payload,
+    importMode,
+  });
+}
+
 module.exports = {
   createMedicalRecord,
   createPatient,
   deleteMedicalRecord,
   deletePatient,
+  exportMedicalRecords,
   getDeletedRecordsByPatientId,
   getPatientById,
   getPatientByIdIncludingDeleted,
@@ -256,6 +268,7 @@ module.exports = {
   getRecordById,
   getRecordsByPatientId,
   getTrashRecordById,
+  importMedicalRecords,
   isCloudMode,
   listPatients,
   permanentlyDeleteMedicalRecord,

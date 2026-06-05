@@ -5,6 +5,7 @@
       <view class="title">病人档案</view>
     </view>
     <view class="header-actions">
+      <view class="tool-button import-button" bindtap="onImportJson">入</view>
       <view class="tool-button" bindtap="onOpenTrash">♲</view>
       <button class="icon-button" bindtap="onCreatePatient" aria-label="新增病人">＋</button>
     </view>

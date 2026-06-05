@@ -72,6 +72,11 @@ page {
   width: 48rpx;
 }
 
+.import-button {
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
 .auth-banner {
   background: #fffaf0;
   border: 1rpx solid #ead9b8;
