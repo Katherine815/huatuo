@@ -97,7 +97,22 @@ function copyTextExport(patient, records) {
   });
 }
 
-function downloadExportFile(exportResult) {
+function getTempDownloadUrl(exportResult) {
+  return new Promise((resolve) => {
+    wx.cloud.getTempFileURL({
+      fileList: [exportResult.fileID],
+      success(response) {
+        const firstFile = (response.fileList || [])[0];
+        resolve(firstFile && firstFile.tempFileURL ? firstFile.tempFileURL : "");
+      },
+      fail() {
+        resolve("");
+      },
+    });
+  });
+}
+
+function openPdfExportFile(exportResult) {
   wx.showLoading({
     title: "正在下载",
     mask: true,
@@ -108,38 +123,16 @@ function downloadExportFile(exportResult) {
     success(response) {
       wx.hideLoading();
 
-      if (exportResult.format === "pdf") {
-        wx.openDocument({
-          filePath: response.tempFilePath,
-          fileType: "pdf",
-          showMenu: true,
-          fail() {
-            wx.showToast({
-              title: "PDF 已生成，打开失败",
-              icon: "none",
-            });
-          },
-        });
-        return;
-      }
-
-      if (wx.shareFileMessage) {
-        wx.shareFileMessage({
-          filePath: response.tempFilePath,
-          fileName: exportResult.fileName,
-          fail() {
-            wx.showToast({
-              title: "JSON 已生成",
-              icon: "success",
-            });
-          },
-        });
-        return;
-      }
-
-      wx.showToast({
-        title: "JSON 已生成",
-        icon: "success",
+      wx.openDocument({
+        filePath: response.tempFilePath,
+        fileType: "pdf",
+        showMenu: true,
+        fail() {
+          wx.showToast({
+            title: "PDF 已生成，打开失败",
+            icon: "none",
+          });
+        },
       });
     },
     fail() {
@@ -149,6 +142,43 @@ function downloadExportFile(exportResult) {
         icon: "none",
       });
     },
+  });
+}
+
+function showJsonDownloadLink(exportResult) {
+  wx.showLoading({
+    title: "正在生成链接",
+    mask: true,
+  });
+
+  getTempDownloadUrl(exportResult).then((tempDownloadUrl) => {
+    wx.hideLoading();
+
+    if (!tempDownloadUrl) {
+      wx.showToast({
+        title: "生成链接失败",
+        icon: "none",
+      });
+      return;
+    }
+
+    wx.setClipboardData({
+      data: tempDownloadUrl,
+      success() {
+        wx.showModal({
+          title: "JSON 下载链接",
+          content: `临时下载链接已复制到剪贴板。\n\n文件名：${exportResult.fileName}\n\n链接：${tempDownloadUrl}`,
+          showCancel: false,
+        });
+      },
+      fail() {
+        wx.showModal({
+          title: "JSON 下载链接",
+          content: `文件名：${exportResult.fileName}\n\n链接：${tempDownloadUrl}`,
+          showCancel: false,
+        });
+      },
+    });
   });
 }
 
@@ -170,7 +200,13 @@ function runCloudExport(data) {
         })
         .then((exportResult) => {
           wx.hideLoading();
-          downloadExportFile(exportResult);
+
+          if (format === "pdf") {
+            openPdfExportFile(exportResult);
+            return;
+          }
+
+          showJsonDownloadLink(exportResult);
         })
         .catch((error) => {
           wx.hideLoading();

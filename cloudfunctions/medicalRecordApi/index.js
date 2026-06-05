@@ -1134,14 +1134,16 @@ async function exportMedicalRecords(event) {
     : `${payload.patient.name}_全部医疗记录`);
   const fileName = `${fileBaseName}.${format}`;
   const fileContent = format === "pdf" ? buildPdfBuffer(buildPdfLines(payload)) : buildJsonBuffer(payload);
+  const cloudPath = `exports/${payload.patient.id}/${Date.now()}_${fileName}`;
   const uploadResult = await cloud.uploadFile({
-    cloudPath: `exports/${payload.patient.id}/${Date.now()}_${fileName}`,
+    cloudPath,
     fileContent,
   });
 
   return {
     success: true,
     fileID: uploadResult.fileID,
+    cloudPath,
     fileName,
     format,
   };

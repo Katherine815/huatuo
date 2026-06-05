@@ -64,6 +64,32 @@ Page({
       return;
     }
 
+    wx.showModal({
+      title: "导入 JSON 备份",
+      content: "微信小程序不能直接打开手机 Downloads 文件夹。请先把本地 JSON 文件转发到任意微信聊天，再从聊天文件选择；或先复制 JSON 全文，小程序会自动读取系统剪贴板导入。",
+      confirmText: "选择方式",
+      cancelText: "取消",
+      success: (modalResult) => {
+        if (!modalResult.confirm) {
+          return;
+        }
+
+        wx.showActionSheet({
+          itemList: ["从微信聊天文件选择", "读取剪贴板中的 JSON"],
+          success: (result) => {
+            if (result.tapIndex === 0) {
+              this.chooseJsonFromMessageFile();
+              return;
+            }
+
+            this.importJsonFromClipboard();
+          },
+        });
+      },
+    });
+  },
+
+  chooseJsonFromMessageFile() {
     wx.chooseMessageFile({
       count: 1,
       type: "file",
@@ -86,6 +112,44 @@ Page({
     });
   },
 
+  importJsonFromClipboard() {
+    wx.getClipboardData({
+      success: (result) => {
+        this.importJsonText(result.data || "");
+      },
+      fail: () => {
+        wx.showToast({
+          title: "读取剪贴板失败",
+          icon: "none",
+        });
+      },
+    });
+  },
+
+  importJsonText(jsonText) {
+    if (!jsonText.trim()) {
+      wx.showToast({
+        title: "剪贴板为空",
+        icon: "none",
+      });
+      return;
+    }
+
+    let payload = null;
+
+    try {
+      payload = JSON.parse(jsonText);
+    } catch (error) {
+      wx.showToast({
+        title: "JSON 格式不正确",
+        icon: "none",
+      });
+      return;
+    }
+
+    this.confirmImportMode(payload);
+  },
+
   importJsonFile(filePath) {
     const fs = wx.getFileSystemManager();
 
@@ -98,21 +162,8 @@ Page({
       filePath,
       encoding: "utf8",
       success: (fileResult) => {
-        let payload = null;
-
-        try {
-          payload = JSON.parse(fileResult.data);
-        } catch (error) {
-          wx.hideLoading();
-          wx.showToast({
-            title: "JSON 格式不正确",
-            icon: "none",
-          });
-          return;
-        }
-
         wx.hideLoading();
-        this.confirmImportMode(payload);
+        this.importJsonText(fileResult.data);
       },
       fail: () => {
         wx.hideLoading();
