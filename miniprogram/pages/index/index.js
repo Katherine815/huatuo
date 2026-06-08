@@ -11,6 +11,7 @@ Page({
     totalMedicalRecordCount: 0,
     authStatus: "正在检查访问权限...",
     authMode: "checking",
+    authName: "",
     authOpenid: "",
   },
 
@@ -52,6 +53,24 @@ Page({
   onOpenTrash() {
     wx.navigateTo({
       url: "/pages/trash/index",
+    });
+  },
+
+  onCopyAuthValue(event) {
+    const { label, value } = event.currentTarget.dataset;
+
+    if (!value) {
+      return;
+    }
+
+    wx.setClipboardData({
+      data: value,
+      success() {
+        wx.showToast({
+          title: `已复制${label}`,
+          icon: "success",
+        });
+      },
     });
   },
 
@@ -252,6 +271,7 @@ Page({
       this.setData({
         authStatus: auth.statusText,
         authMode: auth.mode,
+        authName: auth.name || "",
         authOpenid: auth.openid,
       });
     });

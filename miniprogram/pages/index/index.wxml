@@ -11,8 +11,26 @@
 
   <view class="auth-banner">
     <view class="auth-title">访问控制</view>
-    <view class="auth-copy">{{authStatus}}</view>
-    <view wx:if="{{authOpenid}}" class="auth-openid">OpenID：{{authOpenid}}</view>
+    <view class="auth-copy">
+      <text>{{authStatus}}</text>
+      <text wx:if="{{authName}}">：{{authName}}</text>
+      <text
+        wx:if="{{authName}}"
+        class="copy-auth-link"
+        data-label="姓名"
+        data-value="{{authName}}"
+        bindtap="onCopyAuthValue"
+      >复制</text>
+    </view>
+    <view wx:if="{{authOpenid}}" class="auth-openid">
+      <text>OpenID：{{authOpenid}}</text>
+      <text
+        class="copy-auth-link"
+        data-label="OpenID"
+        data-value="{{authOpenid}}"
+        bindtap="onCopyAuthValue"
+      >复制</text>
+    </view>
   </view>
 
   <view class="search-box">

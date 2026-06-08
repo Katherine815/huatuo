@@ -7,8 +7,7 @@
     "pages/medical-record-edit/index",
     "pages/record-date-filter/index",
     "pages/trash/index",
-    "pages/trash-records/index",
-    "pages/example/index"
+    "pages/trash-records/index"
   ],
   "window": {
     "backgroundColor": "#F4F1EA",

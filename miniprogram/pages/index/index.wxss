@@ -107,6 +107,14 @@ page {
   word-break: break-all;
 }
 
+.copy-auth-link {
+  color: #2f6f5e;
+  font-size: 21rpx;
+  font-weight: 700;
+  margin-left: 12rpx;
+  text-decoration: underline;
+}
+
 .search-box {
   align-items: center;
   background: #ffffff;
