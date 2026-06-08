@@ -7,7 +7,7 @@
 
   <view wx:if="{{!hasGroups}}" class="empty-state">
     <view class="empty-title">回收站为空</view>
-    <view class="empty-copy">删除病人或医疗记录后，会先出现在这里。</view>
+    <view class="empty-copy">删除病人或就诊记录后，会先出现在这里。</view>
   </view>
 
   <view class="trash-list">

@@ -91,7 +91,7 @@ Page({
 
   handleMissingRecord() {
     wx.showToast({
-      title: "未找到医疗记录",
+      title: "未找到就诊记录",
       icon: "none",
     });
 
@@ -112,8 +112,8 @@ Page({
 
   onDeleteRecord() {
     wx.showModal({
-      title: "删除医疗记录",
-      content: "删除后该医疗记录会移入回收站，可在 30 天内恢复。",
+      title: "删除就诊记录",
+      content: "删除后该就诊记录会移入回收站，可在 30 天内恢复。",
       confirmText: "删除",
       confirmColor: "#b42318",
       success: (result) => {

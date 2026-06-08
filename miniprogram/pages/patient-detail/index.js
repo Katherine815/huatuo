@@ -98,7 +98,7 @@ Page({
 
   onCreateRecord() {
     wx.navigateTo({
-      url: `/pages/medical-record-edit/index?patientId=${this.data.patient.id}`,
+      url: `/pages/medical-record-create/index?patientId=${this.data.patient.id}`,
     });
   },
 
@@ -115,7 +115,7 @@ Page({
   onDeletePatient() {
     wx.showModal({
       title: "删除病人",
-      content: "删除后该病人和名下医疗记录会移入回收站，可在 30 天内恢复。",
+      content: "删除后该病人和名下就诊记录会移入回收站，可在 30 天内恢复。",
       confirmText: "删除",
       confirmColor: "#b42318",
       success: (result) => {

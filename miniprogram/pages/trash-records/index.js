@@ -44,7 +44,7 @@ Page({
             patient,
             records,
             hasRecords: records.length > 0,
-            title: `${patientName}的医疗记录`,
+            title: `${patientName}的就诊记录`,
           });
         })
         .catch(() => {
@@ -67,7 +67,7 @@ Page({
       patient,
       records,
       hasRecords: records.length > 0,
-      title: `${patientName}的医疗记录`,
+      title: `${patientName}的就诊记录`,
     });
   },
 

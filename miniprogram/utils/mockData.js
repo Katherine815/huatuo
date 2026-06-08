@@ -497,11 +497,11 @@ function getRecycleBinGroups() {
         patientId,
         patientName: patient ? patient.name : "未知病人",
         patientNo: patient ? patient.patientNo : "",
-        title: `${patient ? patient.name : "未知病人"}的医疗记录`,
+        title: `${patient ? patient.name : "未知病人"}的就诊记录`,
         recordCount: records.length,
         isPatientDeleted: Boolean(patient && patient.deletedAt),
         latestDeletedAt,
-        detail: patient && patient.deletedAt ? "病人已删除，相关医疗记录在回收站中" : `包含 ${records.length} 条已删除医疗记录`,
+        detail: patient && patient.deletedAt ? "病人已删除，相关就诊记录在回收站中" : `包含 ${records.length} 条已删除就诊记录`,
       };
     })
     .filter(Boolean)

@@ -458,7 +458,7 @@ async function getMedicalRecord(event) {
   if (!record || record.deletedAt) {
     return {
       success: false,
-      message: "未找到医疗记录",
+      message: "未找到就诊记录",
     };
   }
 
@@ -478,7 +478,7 @@ async function getTrashMedicalRecord(event) {
   if (!record || !record.deletedAt) {
     return {
       success: false,
-      message: "未找到回收站医疗记录",
+      message: "未找到回收站就诊记录",
     };
   }
 
@@ -669,11 +669,11 @@ async function listRecycleBinGroups() {
         patientId,
         patientName: patient ? patient.name : "未知病人",
         patientNo: patient ? patient.patientNo : "",
-        title: `${patient ? patient.name : "未知病人"}的医疗记录`,
+        title: `${patient ? patient.name : "未知病人"}的就诊记录`,
         recordCount: patientRecords.length,
         isPatientDeleted: Boolean(patient && patient.deletedAt),
         latestDeletedAt,
-        detail: patient && patient.deletedAt ? "病人已删除，相关医疗记录在回收站中" : `包含 ${patientRecords.length} 条已删除医疗记录`,
+        detail: patient && patient.deletedAt ? "病人已删除，相关就诊记录在回收站中" : `包含 ${patientRecords.length} 条已删除就诊记录`,
       };
     })
     .filter(Boolean)
@@ -934,7 +934,7 @@ async function getExportPayload(event) {
   if (!records.length) {
     return {
       success: false,
-      message: "暂无可导出的医疗记录",
+      message: "暂无可导出的就诊记录",
     };
   }
 
@@ -1099,7 +1099,7 @@ function buildPdfLines(payload) {
   payload.records.forEach((record) => {
     lines.push(createPdfLine(""));
     lines.push(createPdfLine("--------------------------------------------------"));
-    lines.push(createPdfLine(`医疗记录编号：${record.recordNo || ""}`));
+    lines.push(createPdfLine(`就诊记录编号：${record.recordNo || ""}`));
     lines.push(createPdfLine(`就诊日期：${record.visitDate || ""}`));
     lines.push(createPdfLine(`更新时间：${record.updatedAt || ""}`));
 
@@ -1131,7 +1131,7 @@ async function exportMedicalRecords(event) {
   const isSingleRecord = Boolean(event.recordId);
   const fileBaseName = sanitizeFileName(isSingleRecord
     ? `${payload.patient.name}_${payload.records[0].recordNo}`
-    : `${payload.patient.name}_全部医疗记录`);
+    : `${payload.patient.name}_全部就诊记录`);
   const fileName = `${fileBaseName}.${format}`;
   const fileContent = format === "pdf" ? buildPdfBuffer(buildPdfLines(payload)) : buildJsonBuffer(payload);
   const cloudPath = `exports/${payload.patient.id}/${Date.now()}_${fileName}`;
@@ -1165,14 +1165,14 @@ function validateImportPayload(payload) {
   }
 
   if (!payload.records.length) {
-    return "JSON 中没有医疗记录";
+    return "JSON 中没有就诊记录";
   }
 
   for (let i = 0; i < payload.records.length; i++) {
     const message = validateMedicalRecordPayload(payload.records[i]);
 
     if (message) {
-      return `第 ${i + 1} 条医疗记录不完整：${message}`;
+      return `第 ${i + 1} 条就诊记录不完整：${message}`;
     }
   }
 

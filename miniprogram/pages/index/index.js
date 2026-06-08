@@ -220,7 +220,7 @@ Page({
         wx.hideLoading();
         wx.showModal({
           title: "导入完成",
-          content: `新增病人 ${importResult.importedPatientCount || 0} 个，新增医疗记录 ${importedCount} 条，跳过重复 ${skippedCount} 条。`,
+          content: `新增病人 ${importResult.importedPatientCount || 0} 个，新增就诊记录 ${importedCount} 条，跳过重复 ${skippedCount} 条。`,
           showCancel: false,
         });
         this.refreshPatients(this.data.keyword);

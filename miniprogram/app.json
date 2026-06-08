@@ -4,6 +4,7 @@
     "pages/patient-detail/index",
     "pages/patient-edit/index",
     "pages/medical-record-detail/index",
+    "pages/medical-record-create/index",
     "pages/medical-record-edit/index",
     "pages/record-date-filter/index",
     "pages/trash/index",

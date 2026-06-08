@@ -123,6 +123,12 @@ page {
   margin: 0 0 0 auto;
 }
 
+.add-record-button {
+  font-size: 24rpx;
+  padding: 0 20rpx;
+  white-space: nowrap;
+}
+
 .date-filter-button {
   align-items: center;
   background: #ffffff;

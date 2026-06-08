@@ -5,7 +5,7 @@
       <view class="title">病人档案</view>
     </view>
     <view class="header-actions">
-      <button class="icon-button" bindtap="onCreatePatient" aria-label="新增病人">＋</button>
+      <button class="add-patient-button" bindtap="onCreatePatient">新增病人</button>
     </view>
   </view>
 
@@ -52,7 +52,7 @@
     </view>
     <view class="stat">
       <view class="stat-value">{{totalMedicalRecordCount}}</view>
-      <view class="stat-label">医疗记录总数</view>
+      <view class="stat-label">就诊记录总数</view>
     </view>
   </view>
 

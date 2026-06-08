@@ -39,7 +39,7 @@ function buildRecordLines(record) {
   const lines = [
     "",
     "----------------------------------------",
-    `医疗记录编号：${record.recordNo || ""}`,
+    `就诊记录编号：${record.recordNo || ""}`,
     `就诊日期：${record.visitDate || ""}`,
     `更新时间：${record.updatedAt || ""}`,
   ];
@@ -80,7 +80,7 @@ function buildTextExport(patient, records) {
 function copyTextExport(patient, records) {
   if (!records.length) {
     wx.showToast({
-      title: "暂无可导出的医疗记录",
+      title: "暂无可导出的就诊记录",
       icon: "none",
     });
     return;

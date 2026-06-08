@@ -17,6 +17,11 @@ page {
   margin-bottom: 18rpx;
 }
 
+.edit-title-block {
+  flex: 1;
+  min-width: 0;
+}
+
 .eyebrow {
   color: #7b6f5e;
   font-size: 22rpx;
@@ -46,6 +51,20 @@ page {
   line-height: 72rpx;
   min-height: 72rpx;
   padding: 0 24rpx;
+}
+
+.top-save {
+  align-items: center;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 auto;
+  justify-content: center;
+  margin: 0;
+  min-height: 56rpx;
+  min-width: 0;
+  line-height: 56rpx;
+  padding: 0 18rpx;
+  width: auto;
 }
 
 .date-row {

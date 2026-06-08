@@ -11,7 +11,7 @@
     </view>
   </view>
 
-  <view wx:if="{{isTrash}}" class="trash-banner">这条医疗记录在回收站中。</view>
+  <view wx:if="{{isTrash}}" class="trash-banner">这条就诊记录在回收站中。</view>
 
   <view class="meta-grid">
     <view class="meta-item">
@@ -38,10 +38,10 @@
     </view>
   </view>
 
-  <button wx:if="{{!isTrash}}" class="danger-button" bindtap="onDeleteRecord">删除医疗记录</button>
+  <button wx:if="{{!isTrash}}" class="danger-button" bindtap="onDeleteRecord">删除就诊记录</button>
 
   <view wx:if="{{isTrash}}" class="trash-actions">
-    <button class="restore-button" bindtap="onRestoreRecord">恢复医疗记录</button>
-    <button class="danger-button" bindtap="onPermanentDeleteRecord">永久删除医疗记录</button>
+    <button class="restore-button" bindtap="onRestoreRecord">恢复就诊记录</button>
+    <button class="danger-button" bindtap="onPermanentDeleteRecord">永久删除就诊记录</button>
   </view>
 </view>

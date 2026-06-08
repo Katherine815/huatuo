@@ -2,7 +2,7 @@
   <view class="header">
     <view class="eyebrow">Date Filter</view>
     <view class="title">{{patient.name}}</view>
-    <view class="subtitle">选择某一天，只查看当天医疗记录</view>
+    <view class="subtitle">选择某一天，只查看当天就诊记录</view>
   </view>
 
   <view class="calendar-card">
@@ -31,5 +31,5 @@
     </view>
   </view>
 
-  <view class="hint">直接返回会退出筛选，并显示全部医疗记录。</view>
+  <view class="hint">直接返回会退出筛选，并显示全部就诊记录。</view>
 </view>

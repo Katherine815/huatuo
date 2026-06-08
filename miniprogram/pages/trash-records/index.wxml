@@ -2,16 +2,16 @@
   <view class="header">
     <view class="eyebrow">回收站</view>
     <view class="title">{{title}}</view>
-    <view class="subtitle">这里显示该病人已删除的医疗记录。</view>
+    <view class="subtitle">这里显示该病人已删除的就诊记录。</view>
   </view>
 
   <view class="bulk-actions">
-    <button class="restore-button" bindtap="onRestoreAll">恢复所有医疗记录</button>
-    <button class="delete-button" bindtap="onPermanentDeleteAll">永久删除所有医疗记录</button>
+    <button class="restore-button" bindtap="onRestoreAll">恢复所有就诊记录</button>
+    <button class="delete-button" bindtap="onPermanentDeleteAll">永久删除所有就诊记录</button>
   </view>
 
   <view wx:if="{{!hasRecords}}" class="empty-state">
-    <view class="empty-title">没有已删除医疗记录</view>
+    <view class="empty-title">没有已删除就诊记录</view>
     <view class="empty-copy">该分组可能已经被恢复或永久删除。</view>
   </view>
 
