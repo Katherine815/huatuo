@@ -1,4 +1,4 @@
-const { getMedicalRecordCount, searchPatients } = require("../../utils/mockData");
+const { getMedicalRecordCount, getRecordsByVisitDate, searchPatients } = require("../../utils/mockData");
 const { checkAuth } = require("../../services/authService");
 const cloudMedicalRecordService = require("../../services/cloudMedicalRecordService");
 
@@ -13,6 +13,12 @@ Page({
     authMode: "checking",
     authName: "",
     authOpenid: "",
+    selectedVisitDate: "",
+    dateFilterLabel: "按日期筛选",
+    hasDateFilter: false,
+    dateFilterButtonClass: "section-action-button filter-action-button",
+    filteredRecords: [],
+    hasFilteredRecords: false,
   },
 
   onLoad() {
@@ -22,6 +28,7 @@ Page({
 
   onShow() {
     this.refreshPatients(this.data.keyword);
+    this.refreshFilteredRecords();
   },
 
   onSearchInput(event) {
@@ -53,6 +60,89 @@ Page({
   onOpenTrash() {
     wx.navigateTo({
       url: "/pages/trash/index",
+    });
+  },
+
+  onOpenDateFilter() {
+    if (this.data.hasDateFilter) {
+      this.applyDateFilter("");
+      return;
+    }
+
+    wx.navigateTo({
+      url: `/pages/record-date-filter/index?date=${this.data.selectedVisitDate || ""}`,
+      events: {
+        selectDate: (payload) => {
+          this.applyDateFilter(payload.date);
+        },
+        resetDateFilter: () => {
+          this.applyDateFilter("");
+        },
+      },
+    });
+  },
+
+  applyDateFilter(date) {
+    this.setData({
+      selectedVisitDate: date,
+      dateFilterLabel: date ? `筛选${date}` : "按日期筛选",
+      hasDateFilter: Boolean(date),
+      dateFilterButtonClass: date
+        ? "section-action-button filter-action-button active"
+        : "section-action-button filter-action-button",
+    });
+    this.refreshFilteredRecords();
+  },
+
+  refreshFilteredRecords() {
+    const { selectedVisitDate } = this.data;
+
+    if (!selectedVisitDate) {
+      this.setData({
+        filteredRecords: [],
+        hasFilteredRecords: false,
+      });
+      return;
+    }
+
+    if (cloudMedicalRecordService.isCloudMode()) {
+      cloudMedicalRecordService
+        .getRecordsByVisitDate(selectedVisitDate)
+        .then((records) => {
+          this.setFilteredRecords(records);
+        })
+        .catch((error) => {
+          wx.showToast({
+            title: error.message || "读取就诊记录失败",
+            icon: "none",
+          });
+        });
+      return;
+    }
+
+    this.setFilteredRecords(getRecordsByVisitDate(selectedVisitDate));
+  },
+
+  setFilteredRecords(records) {
+    const filteredRecords = (records || []).map((record) => {
+      return {
+        ...record,
+        patientName: record.patient && record.patient.name ? record.patient.name : "",
+        patientNo: record.patient && record.patient.patientNo ? record.patient.patientNo : "",
+      };
+    });
+
+    this.setData({
+      filteredRecords,
+      hasFilteredRecords: filteredRecords.length > 0,
+    });
+  },
+
+  onOpenFilteredRecord(event) {
+    const { id } = event.currentTarget.dataset;
+
+    wx.navigateTo({
+      url: `/pages/medical-record-detail/index?id=${id}`,
     });
   },
 

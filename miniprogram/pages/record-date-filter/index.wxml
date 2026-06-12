@@ -1,8 +1,8 @@
-<view class="page" wx:if="{{patient}}">
+<view class="page">
   <view class="header">
     <view class="eyebrow">Date Filter</view>
-    <view class="title">{{patient.name}}</view>
-    <view class="subtitle">选择某一天，只查看当天就诊记录</view>
+    <view class="title">全部病人</view>
+    <view class="subtitle">选择某一天，查看所有病人的当天就诊记录</view>
   </view>
 
   <view class="calendar-card">

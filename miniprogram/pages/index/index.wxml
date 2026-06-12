@@ -59,17 +59,41 @@
   <view class="section-bar">
     <view class="section-heading">病人列表</view>
     <view class="section-actions">
+      <view class="{{dateFilterButtonClass}}" bindtap="onOpenDateFilter">
+        <text wx:if="{{hasDateFilter}}" class="filter-x">×</text>
+        <text>{{dateFilterLabel}}</text>
+      </view>
       <view class="section-action-button" bindtap="onImportJson">导入</view>
       <view class="section-action-button" bindtap="onOpenTrash">回收站</view>
     </view>
   </view>
 
-  <view wx:if="{{!hasPatients}}" class="empty-state">
+  <view wx:if="{{hasDateFilter}}" class="filtered-record-panel">
+    <view class="filtered-title">{{selectedVisitDate}} 就诊记录</view>
+    <view wx:if="{{!hasFilteredRecords}}" class="empty-state">
+      <view class="empty-title">这一天没有就诊记录</view>
+      <view class="empty-copy">再次点击筛选按钮，即可显示全部病人。</view>
+    </view>
+    <view wx:for="{{filteredRecords}}" wx:key="id" class="filtered-record-card" data-id="{{item.id}}" bindtap="onOpenFilteredRecord">
+      <view class="filtered-record-top">
+        <view>
+          <view class="filtered-patient-name">{{item.patientName}}</view>
+          <view class="filtered-patient-no">{{item.patientNo}}</view>
+        </view>
+        <view class="filtered-record-no">{{item.recordNo}}</view>
+      </view>
+      <view class="chief-title">主诉</view>
+      <view class="chief-copy">{{item.chiefComplaint}}</view>
+      <view class="filtered-footer">查看完整记录</view>
+    </view>
+  </view>
+
+  <view wx:if="{{!hasDateFilter && !hasPatients}}" class="empty-state">
     <view class="empty-title">没有匹配的病人</view>
     <view class="empty-copy">请尝试姓名、联系方式或病人编号。</view>
   </view>
 
-  <view class="patient-list">
+  <view wx:if="{{!hasDateFilter}}" class="patient-list">
     <view
       wx:for="{{patients}}"
       wx:key="id"

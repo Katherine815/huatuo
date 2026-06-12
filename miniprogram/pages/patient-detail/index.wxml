@@ -37,19 +37,9 @@
     <button class="primary-button add-record-button" bindtap="onCreateRecord">新增就诊记录</button>
   </view>
 
-  <view class="{{dateFilterButtonClass}}" bindtap="onOpenDateFilter">
-    <text wx:if="{{hasDateFilter}}" class="filter-x">×</text>
-    <text>{{dateFilterLabel}}</text>
-  </view>
-
   <view wx:if="{{!hasAnyRecords}}" class="empty-state">
     <view class="empty-title">暂无就诊记录</view>
     <view class="empty-copy">点击“新增”创建该病人的第一次就诊记录。</view>
-  </view>
-
-  <view wx:if="{{hasFilteredOutRecords}}" class="empty-state">
-    <view class="empty-title">这一天没有就诊记录</view>
-    <view class="empty-copy">再次点击上方筛选按钮，即可恢复全部就诊记录。</view>
   </view>
 
   <view class="timeline">

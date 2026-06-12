@@ -280,6 +280,43 @@ function getRecordsByPatientId(patientId) {
     });
 }
 
+function getRecordsByVisitDate(visitDate) {
+  const state = loadState();
+  const patientById = {};
+
+  state.patients.forEach((patient) => {
+    if (!patient.deletedAt) {
+      patientById[patient.id] = patient;
+    }
+  });
+
+  return state.medicalRecords
+    .filter((record) => {
+      return record.visitDate === visitDate && !record.deletedAt && patientById[record.patientId];
+    })
+    .sort((a, b) => {
+      return String(a.recordNo || "").localeCompare(String(b.recordNo || ""));
+    })
+    .map((record) => {
+      return {
+        ...record,
+        patient: patientById[record.patientId],
+      };
+    });
+}
+
+function getRecordDateCounts(year, month) {
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const counts = {};
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    counts[date] = getRecordsByVisitDate(date).length;
+  }
+
+  return counts;
+}
+
 function hydrateRecord(record) {
   if (!record) {
     return record;
@@ -720,11 +757,13 @@ module.exports = {
   getDeletedRecordsByPatientId,
   getRecycleBinGroups,
   getRecordById,
+  getRecordDateCounts,
   getMedicalRecordCount,
   getPatients,
   getPatientById,
   getPatientByIdIncludingDeleted,
   getRecordsByPatientId,
+  getRecordsByVisitDate,
   searchPatients,
   permanentlyDeleteTrashItem,
   permanentlyDeletePatientRecycleRecords,

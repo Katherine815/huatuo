@@ -199,6 +199,8 @@ page {
   align-items: center;
   display: flex;
   gap: 12rpx;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .section-action-button {
@@ -213,6 +215,90 @@ page {
   justify-content: center;
   line-height: 50rpx;
   padding: 0 18rpx;
+}
+
+.filter-action-button {
+  background: #ffffff;
+  border: 1rpx solid #d7ccbb;
+  color: #4f5d67;
+  max-width: 260rpx;
+}
+
+.filter-action-button.active {
+  background: #e8f3ee;
+  border-color: #72a890;
+  color: #1f4f43;
+  font-weight: 700;
+}
+
+.filter-x {
+  color: #1f4f43;
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: 1;
+  margin-right: 6rpx;
+}
+
+.filtered-record-panel {
+  margin-bottom: 24rpx;
+}
+
+.filtered-title {
+  color: #1f2933;
+  font-size: 26rpx;
+  font-weight: 700;
+  margin-bottom: 14rpx;
+}
+
+.filtered-record-card {
+  background: #ffffff;
+  border: 1rpx solid #e3dac8;
+  border-radius: 8rpx;
+  box-sizing: border-box;
+  margin-bottom: 16rpx;
+  padding: 22rpx;
+}
+
+.filtered-record-top {
+  align-items: flex-start;
+  display: flex;
+  gap: 14rpx;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+
+.filtered-patient-name {
+  color: #1f2933;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.filtered-patient-no,
+.filtered-record-no {
+  color: #7b6f5e;
+  font-size: 21rpx;
+  line-height: 1.4;
+}
+
+.chief-title {
+  color: #7b6f5e;
+  font-size: 22rpx;
+  margin-bottom: 8rpx;
+}
+
+.chief-copy {
+  color: #1f2933;
+  font-size: 27rpx;
+  line-height: 1.45;
+  margin-bottom: 14rpx;
+}
+
+.filtered-footer {
+  color: #2f6f5e;
+  font-size: 24rpx;
+  font-weight: 700;
+  text-align: right;
 }
 
 .patient-list {

@@ -448,6 +448,126 @@ async function listPatientRecords(event) {
   };
 }
 
+async function listRecordsByDate(event) {
+  const visitDate = String(event.visitDate || "").trim();
+
+  if (!visitDate) {
+    return {
+      success: true,
+      records: [],
+    };
+  }
+
+  const recordResult = await db
+    .collection("medical_records")
+    .where({
+      visitDate,
+      deletedAt: "",
+    })
+    .orderBy("recordNo", "asc")
+    .limit(100)
+    .get();
+  const records = recordResult.data.map(normalizeMedicalRecord);
+  const patientIds = [];
+
+  records.forEach((record) => {
+    if (record.patientId && patientIds.indexOf(record.patientId) < 0) {
+      patientIds.push(record.patientId);
+    }
+  });
+
+  const patientById = {};
+
+  if (patientIds.length) {
+    const patientResult = await db
+      .collection("patients")
+      .where({
+        _id: db.command.in(patientIds),
+        deletedAt: "",
+      })
+      .get();
+
+    patientResult.data.map(normalizePatient).forEach((patient) => {
+      patientById[patient.id] = patient;
+    });
+  }
+
+  return {
+    success: true,
+    records: records
+      .filter((record) => patientById[record.patientId])
+      .map((record) => {
+        return {
+          ...record,
+          patient: patientById[record.patientId],
+        };
+      }),
+  };
+}
+
+async function listRecordDateCounts(event) {
+  const year = Number(event.year);
+  const month = Number(event.month);
+
+  if (!year || !month) {
+    return {
+      success: true,
+      counts: {},
+    };
+  }
+
+  const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+  const endDay = new Date(year, month, 0).getDate();
+  const endDate = `${year}-${String(month).padStart(2, "0")}-${String(endDay).padStart(2, "0")}`;
+  const recordResult = await db
+    .collection("medical_records")
+    .where({
+      visitDate: db.command.gte(startDate).and(db.command.lte(endDate)),
+      deletedAt: "",
+    })
+    .limit(500)
+    .get();
+  const records = recordResult.data.map(normalizeMedicalRecord);
+  const patientIds = [];
+
+  records.forEach((record) => {
+    if (record.patientId && patientIds.indexOf(record.patientId) < 0) {
+      patientIds.push(record.patientId);
+    }
+  });
+
+  const activePatientIds = [];
+
+  if (patientIds.length) {
+    const patientResult = await db
+      .collection("patients")
+      .where({
+        _id: db.command.in(patientIds),
+        deletedAt: "",
+      })
+      .get();
+
+    patientResult.data.map(normalizePatient).forEach((patient) => {
+      activePatientIds.push(patient.id);
+    });
+  }
+
+  const counts = {};
+
+  records.forEach((record) => {
+    if (activePatientIds.indexOf(record.patientId) < 0) {
+      return;
+    }
+
+    counts[record.visitDate] = (counts[record.visitDate] || 0) + 1;
+  });
+
+  return {
+    success: true,
+    counts,
+  };
+}
+
 async function getMedicalRecord(event) {
   const result = await db
     .collection("medical_records")
@@ -1394,6 +1514,10 @@ exports.main = async (event) => {
       return await deletePatient(event);
     case "listPatientRecords":
       return await listPatientRecords(event);
+    case "listRecordsByDate":
+      return await listRecordsByDate(event);
+    case "listRecordDateCounts":
+      return await listRecordDateCounts(event);
     case "getMedicalRecord":
       return await getMedicalRecord(event);
     case "getTrashMedicalRecord":

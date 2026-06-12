@@ -10,11 +10,6 @@ Page({
     records: [],
     hasRecords: false,
     hasAnyRecords: false,
-    hasFilteredOutRecords: false,
-    selectedVisitDate: "",
-    dateFilterLabel: "按日期筛选",
-    hasDateFilter: false,
-    dateFilterButtonClass: "date-filter-button",
   },
 
   onLoad(options) {
@@ -38,15 +33,12 @@ Page({
         cloudMedicalRecordService.getRecordsByPatientId(this.data.patientId),
       ])
         .then(([patient, allRecords]) => {
-          const records = this.filterRecordsByDate(allRecords, this.data.selectedVisitDate);
-
           this.setData({
             patient,
             allRecords,
-            records,
-            hasRecords: records.length > 0,
+            records: allRecords,
+            hasRecords: allRecords.length > 0,
             hasAnyRecords: allRecords.length > 0,
-            hasFilteredOutRecords: allRecords.length > 0 && records.length === 0,
           });
         })
         .catch(() => {
@@ -63,15 +55,13 @@ Page({
     }
 
     const allRecords = getRecordsByPatientId(patient.id);
-    const records = this.filterRecordsByDate(allRecords, this.data.selectedVisitDate);
 
     this.setData({
       patient,
       allRecords,
-      records,
-      hasRecords: records.length > 0,
+      records: allRecords,
+      hasRecords: allRecords.length > 0,
       hasAnyRecords: allRecords.length > 0,
-      hasFilteredOutRecords: allRecords.length > 0 && records.length === 0,
     });
   },
 
@@ -84,16 +74,6 @@ Page({
     setTimeout(() => {
       wx.navigateBack();
     }, 800);
-  },
-
-  filterRecordsByDate(records, selectedDate) {
-    if (!selectedDate) {
-      return records;
-    }
-
-    return records.filter((record) => {
-      return record.visitDate === selectedDate;
-    });
   },
 
   onCreateRecord() {
@@ -175,36 +155,4 @@ Page({
     });
   },
 
-  onOpenDateFilter() {
-    if (this.data.hasDateFilter) {
-      this.applyDateFilter("");
-      return;
-    }
-
-    wx.navigateTo({
-      url: `/pages/record-date-filter/index?patientId=${this.data.patient.id}`,
-      events: {
-        selectDate: (payload) => {
-          this.applyDateFilter(payload.date);
-        },
-        resetDateFilter: () => {
-          this.applyDateFilter("");
-        },
-      },
-    });
-  },
-
-  applyDateFilter(date) {
-    const records = this.filterRecordsByDate(this.data.allRecords, date);
-
-    this.setData({
-      selectedVisitDate: date,
-      dateFilterLabel: date ? `筛选${date}` : "按日期筛选",
-      hasDateFilter: Boolean(date),
-      dateFilterButtonClass: date ? "date-filter-button active" : "date-filter-button",
-      records,
-      hasRecords: records.length > 0,
-      hasFilteredOutRecords: this.data.allRecords.length > 0 && records.length === 0,
-    });
-  },
 });

@@ -163,6 +163,23 @@ function getRecordsByPatientId(patientId) {
   });
 }
 
+function getRecordsByVisitDate(visitDate) {
+  return callMedicalRecordApi("listRecordsByDate", {
+    visitDate,
+  }).then((result) => {
+    return result.records || [];
+  });
+}
+
+function getRecordDateCounts(year, month) {
+  return callMedicalRecordApi("listRecordDateCounts", {
+    year,
+    month,
+  }).then((result) => {
+    return result.counts || {};
+  });
+}
+
 function getRecordById(id) {
   return callMedicalRecordApi("getMedicalRecord", {
     id,
@@ -266,7 +283,9 @@ module.exports = {
   getPatientByIdIncludingDeleted,
   getRecycleBinGroups,
   getRecordById,
+  getRecordDateCounts,
   getRecordsByPatientId,
+  getRecordsByVisitDate,
   getTrashRecordById,
   importMedicalRecords,
   isCloudMode,
